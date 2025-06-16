@@ -1,4 +1,4 @@
-******************************************************************
+*****************************************************************
       * PROGRAMME: SYSTEME BANCAIRE
       * AUTEUR: DEVELOPPEUR COBOL
       * DATE: 2025
@@ -18,9 +18,20 @@
            SELECT TRANSACTION-FILE ASSIGN TO "transaction.dat"
                ORGANIZATION IS LINE SEQUENTIAL
                FILE STATUS IS WS-STATUS.
+           SELECT BANQUE-FILE ASSIGN TO "banque.dat"
+               ORGANIZATION IS LINE SEQUENTIAL
+               FILE STATUS IS WS-STATUS.
 
        DATA DIVISION.
        FILE SECTION.
+
+       FD BANQUE-FILE.
+       01 BANQUE-RECORD.
+           05 BANQUE-ID          PIC 9(5).
+           05 BANQUE-NAME        PIC A(30).
+           05 BANQUE-SOLDE       PIC 9(9)V99.
+           05 BANQUE-INTERETS    PIC 9(3)V99.
+           05 BANQUE-NB-CLIENTS PIC 9(5).
 
        FD CLIENT-FILE.
        01 CLIENT-RECORD.
@@ -43,6 +54,7 @@
            05 TRANSACTION-DATE   PIC 9(8).
            05 TRANSACTION-TYPE   PIC A(10).
            05 TRANSACTION-MONTANT PIC 9(9)V99.
+           05 TRANSACTION-DEST        PIC 9(10).
 
        WORKING-STORAGE SECTION.
        77 WS-STATUS           PIC XX VALUE "00".
@@ -68,6 +80,8 @@
            05 WS-TRANS-DATE    PIC 9(8).
            05 WS-TRANS-TYPE    PIC A(10).
            05 WS-TRANS-MONTANT PIC 9(9)V99.
+           05 WS-TRANS-DEST    PIC 9(10).
+
 
        01 WS-INPUT-ID         PIC 9(10).
        01 WS-INPUT-COMPTE     PIC 9(10).
@@ -76,7 +90,32 @@
        01 WS-COUNTER          PIC 9(10) VALUE 1.
 
        PROCEDURE DIVISION.
+
+       INITIALISER-BANQUE.
+           OPEN I-O BANQUE-FILE
+           IF WS-STATUS NOT = "00"
+               DISPLAY "Erreur ouverture fichier banque: " WS-STATUS
+               MOVE "O" TO QUITTER
+               EXIT PARAGRAPH
+           END-IF
+
+           READ BANQUE-FILE
+               AT END
+                   DISPLAY "Initialisation de la banque..."
+                   MOVE 1 TO BANQUE-ID
+                   MOVE "Ma Banque" TO BANQUE-NAME
+                   MOVE 0 TO BANQUE-SOLDE
+                   MOVE 2.50 TO BANQUE-INTERETS
+                   MOVE 0 TO BANQUE-NB-CLIENTS
+                   WRITE BANQUE-RECORD
+               NOT AT END
+                   DISPLAY "Banque deja initialisee : " BANQUE-NAME
+           END-READ
+
+           CLOSE BANQUE-FILE.
+
        MAIN-PROGRAM.
+           PERFORM INITIALISER-BANQUE
            PERFORM UNTIL QUITTER = "O"
                PERFORM AFFICHER-MENU
            END-PERFORM
@@ -89,7 +128,8 @@
            DISPLAY "2. Creer compte".
            DISPLAY "3. Effectuer transaction".
            DISPLAY "4. Lister comptes client".
-           DISPLAY "5. Quitter".
+           DISPLAY "5. Historique des transactions".
+           DISPLAY "6. Quitter".
            DISPLAY "Choisissez une option : " WITH NO ADVANCING.
            ACCEPT CHOIX.
 
@@ -103,7 +143,10 @@
                WHEN 4
                    PERFORM LISTER-COMPTES-CLIENT
                WHEN 5
+                   PERFORM HISTORIQUE-TRANSACTIONS
+               WHEN 6
                    MOVE "O" TO QUITTER
+               
                WHEN OTHER
                    DISPLAY "Option invalide."
            END-EVALUATE.
@@ -128,6 +171,8 @@
            CLOSE CLIENT-FILE.
 
            DISPLAY "Client ajoute avec succes.".
+       
+       
 
        CREER-COMPTE.
            DISPLAY "Creation d'un compte.".
@@ -173,10 +218,9 @@
 
            DISPLAY "Compte cree avec succes.".
 
-       EFFECTUER-TRANSACTION.
+        EFFECTUER-TRANSACTION.
            DISPLAY "Effectuer une transaction.".
-           DISPLAY "Type (Depot, Retrait, Virement) : "
-               WITH NO ADVANCING.
+           DISPLAY "(Depot, Retrait, Virement) : " WITH NO ADVANCING.
            ACCEPT WS-TRANS-TYPE.
 
            IF WS-TRANS-TYPE = "Depot" OR WS-TRANS-TYPE = "Retrait"
@@ -186,34 +230,29 @@
                ACCEPT WS-INPUT-MONTANT
            ELSE
                IF WS-TRANS-TYPE = "Virement"
-                   DISPLAY "Numero du compte source : "
-                       WITH NO ADVANCING
-                   ACCEPT WS-INPUT-COMPTE
-                   DISPLAY "Numero du compte destination : "
-                       WITH NO ADVANCING
-                   ACCEPT WS-INPUT-ID
-                   DISPLAY "Montant : " WITH NO ADVANCING
-                   ACCEPT WS-INPUT-MONTANT
+                DISPLAY "Numero du compte source : " WITH NO ADVANCING
+                ACCEPT WS-INPUT-COMPTE
+                DISPLAY "Numero du compte desti : " WITH NO ADVANCING
+                ACCEPT WS-INPUT-ID
+                DISPLAY "Montant : " WITH NO ADVANCING
+                ACCEPT WS-INPUT-MONTANT
                ELSE
                    DISPLAY "Type de transaction invalide."
                    EXIT PARAGRAPH
                END-IF
            END-IF.
 
-      *    Ouverture fichier compte pour lecture et mise a jour
            MOVE "N" TO WS-FOUND.
            MOVE "00" TO WS-STATUS.
            OPEN I-O COMPTE-FILE.
 
-           PERFORM VARYING WS-COUNTER FROM 1 BY 1
-               UNTIL WS-STATUS = "10" OR WS-FOUND = "Y"
+           PERFORM UNTIL WS-STATUS = "10" OR WS-FOUND = "Y"
                READ COMPTE-FILE
                    AT END
                        MOVE "10" TO WS-STATUS
                    NOT AT END
                        IF COMPTE-NUM = WS-INPUT-COMPTE
                            MOVE "Y" TO WS-FOUND
-                           EXIT PERFORM
                        END-IF
                END-READ
            END-PERFORM.
@@ -224,11 +263,23 @@
                EXIT PARAGRAPH
            END-IF.
 
-      *    Selon type de transaction
            IF WS-TRANS-TYPE = "Depot"
                ADD WS-INPUT-MONTANT TO COMPTE-SOLDE
                REWRITE COMPTE-RECORD
                DISPLAY "Depot effectue."
+               
+               OPEN EXTEND TRANSACTION-FILE
+               MOVE WS-COUNTER        TO WS-TRANS-ID
+               MOVE WS-INPUT-COMPTE   TO WS-TRANS-COMPTE
+               MOVE WS-TODAY          TO WS-TRANS-DATE
+               MOVE WS-TRANS-TYPE     TO WS-TRANS-TYPE
+               MOVE WS-INPUT-MONTANT  TO WS-TRANS-MONTANT
+               MOVE ZERO              TO WS-TRANS-DEST
+               MOVE WS-TRANSACTION    TO TRANSACTION-RECORD
+               WRITE TRANSACTION-RECORD
+               CLOSE TRANSACTION-FILE
+               ADD 1 TO WS-COUNTER
+
            ELSE
                IF WS-TRANS-TYPE = "Retrait"
                    IF COMPTE-SOLDE < WS-INPUT-MONTANT
@@ -239,6 +290,18 @@
                        SUBTRACT WS-INPUT-MONTANT FROM COMPTE-SOLDE
                        REWRITE COMPTE-RECORD
                        DISPLAY "Retrait effectue."
+
+                       OPEN EXTEND TRANSACTION-FILE
+                       MOVE WS-COUNTER        TO WS-TRANS-ID
+                       MOVE WS-INPUT-COMPTE   TO WS-TRANS-COMPTE
+                       MOVE WS-TODAY          TO WS-TRANS-DATE
+                       MOVE WS-TRANS-TYPE     TO WS-TRANS-TYPE
+                       MOVE WS-INPUT-MONTANT  TO WS-TRANS-MONTANT
+                       MOVE ZERO              TO WS-TRANS-DEST
+                       MOVE WS-TRANSACTION    TO TRANSACTION-RECORD
+                       WRITE TRANSACTION-RECORD
+                       CLOSE TRANSACTION-FILE
+                       ADD 1 TO WS-COUNTER
                    END-IF
                ELSE
                    IF WS-TRANS-TYPE = "Virement"
@@ -247,63 +310,48 @@
                            CLOSE COMPTE-FILE
                            EXIT PARAGRAPH
                        END-IF
+
                        SUBTRACT WS-INPUT-MONTANT FROM COMPTE-SOLDE
                        REWRITE COMPTE-RECORD
-                       DISPLAY "Virement effectue avec succes."
-                       MOVE "N" TO WS-FOUND
-                       MOVE "00" TO WS-STATUS
-                       
-                       CLOSE COMPTE-FILE
-                       OPEN I-O COMPTE-FILE
-                       
-                       MOVE "N" TO WS-FOUND
-                       MOVE "00" TO WS-STATUS
-                       
-                       PERFORM UNTIL WS-STATUS = "10" OR WS-FOUND = "Y"
-                        READ COMPTE-FILE
-                           AT END
-                              MOVE "10" TO WS-STATUS
-                           NOT AT END
-                              IF COMPTE-NUM = WS-INPUT-ID
-                                 ADD WS-INPUT-MONTANT TO COMPTE-SOLDE
-                                 REWRITE COMPTE-RECORD
-                                 DISPLAY "Compte destination credite."
-                                 MOVE "Y" TO WS-FOUND
-                              END-IF
-                        END-READ
-                       END-PERFORM
-                       
-                       IF WS-FOUND = "N"
-                           DISPLAY "Compte destination non trouve."
-                       END-IF
+                       DISPLAY "Compte source debite."
 
-                       
+                       MOVE "N" TO WS-FOUND
+                       MOVE "00" TO WS-STATUS
                        PERFORM UNTIL WS-STATUS = "10" OR WS-FOUND = "Y"
                            READ COMPTE-FILE
                                AT END
                                    MOVE "10" TO WS-STATUS
                                NOT AT END
-                                   IF COMPTE-NUM = WS-INPUT-ID
-                                       ADD WS-INPUT-MONTANT
-                                       TO COMPTE-SOLDE
-                                       REWRITE COMPTE-RECORD
-                                       MOVE "Y" TO WS-FOUND
-                                   END-IF
+                                  IF COMPTE-NUM = WS-INPUT-ID
+                                   ADD WS-INPUT-MONTANT TO COMPTE-SOLDE
+                                   REWRITE COMPTE-RECORD
+                                   DISPLAY "Compte destination credite."
+                                   MOVE "Y" TO WS-FOUND
+                                  END-IF
                            END-READ
                        END-PERFORM
-                       
+
                        IF WS-FOUND = "N"
                            DISPLAY "Compte destination non trouve."
                        END-IF
-                       
 
-   
-
+                       OPEN EXTEND TRANSACTION-FILE
+                       MOVE WS-COUNTER        TO WS-TRANS-ID
+                       MOVE WS-INPUT-COMPTE   TO WS-TRANS-COMPTE
+                       MOVE WS-TODAY          TO WS-TRANS-DATE
+                       MOVE WS-TRANS-TYPE     TO WS-TRANS-TYPE
+                       MOVE WS-INPUT-MONTANT  TO WS-TRANS-MONTANT
+                       MOVE WS-INPUT-ID       TO WS-TRANS-DEST
+                       MOVE WS-TRANSACTION    TO TRANSACTION-RECORD
+                       WRITE TRANSACTION-RECORD
+                       CLOSE TRANSACTION-FILE
+                       ADD 1 TO WS-COUNTER
                    END-IF
                END-IF
            END-IF.
 
            CLOSE COMPTE-FILE.
+
 
       *    Enregistrer la transaction
            OPEN EXTEND TRANSACTION-FILE.
@@ -344,3 +392,37 @@
                DISPLAY "Aucun compte trouve pour ce client."
            END-IF.
 
+       HISTORIQUE-TRANSACTIONS.
+           DISPLAY "Historique des transactions pour un compte".
+           DISPLAY "Numero du compte : " WITH NO ADVANCING.
+           ACCEPT WS-INPUT-COMPTE.
+
+           MOVE "N" TO WS-FOUND.
+           MOVE "00" TO WS-STATUS.
+
+           OPEN INPUT TRANSACTION-FILE.
+
+           PERFORM UNTIL WS-STATUS = "10"
+               READ TRANSACTION-FILE
+                   AT END
+                       MOVE "10" TO WS-STATUS
+                   NOT AT END
+                       IF TRANSACTION-COMPTE = WS-INPUT-COMPTE
+                           DISPLAY "-----------------------------"
+                           DISPLAY "ID        : " TRANSACTION-ID
+                           DISPLAY "Date      : " TRANSACTION-DATE
+                           DISPLAY "Type      : " TRANSACTION-TYPE
+                           DISPLAY "Montant   : " TRANSACTION-MONTANT
+                           IF TRANSACTION-TYPE = "Virement"
+                               DISPLAY "Destination : " TRANSACTION-DEST
+                           END-IF
+                           MOVE "Y" TO WS-FOUND
+                       END-IF
+               END-READ
+           END-PERFORM.
+
+           CLOSE TRANSACTION-FILE.
+
+           IF WS-FOUND = "N"
+               DISPLAY "Aucune transaction trouvee pour ce compte."
+           END-IF.
