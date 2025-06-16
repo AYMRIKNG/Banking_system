@@ -250,6 +250,55 @@
                        SUBTRACT WS-INPUT-MONTANT FROM COMPTE-SOLDE
                        REWRITE COMPTE-RECORD
                        DISPLAY "Virement effectue avec succes."
+                       MOVE "N" TO WS-FOUND
+                       MOVE "00" TO WS-STATUS
+                       
+                       CLOSE COMPTE-FILE
+                       OPEN I-O COMPTE-FILE
+                       
+                       MOVE "N" TO WS-FOUND
+                       MOVE "00" TO WS-STATUS
+                       
+                       PERFORM UNTIL WS-STATUS = "10" OR WS-FOUND = "Y"
+                        READ COMPTE-FILE
+                           AT END
+                              MOVE "10" TO WS-STATUS
+                           NOT AT END
+                              IF COMPTE-NUM = WS-INPUT-ID
+                                 ADD WS-INPUT-MONTANT TO COMPTE-SOLDE
+                                 REWRITE COMPTE-RECORD
+                                 DISPLAY "Compte destination credite."
+                                 MOVE "Y" TO WS-FOUND
+                              END-IF
+                        END-READ
+                       END-PERFORM
+                       
+                       IF WS-FOUND = "N"
+                           DISPLAY "Compte destination non trouve."
+                       END-IF
+
+                       
+                       PERFORM UNTIL WS-STATUS = "10" OR WS-FOUND = "Y"
+                           READ COMPTE-FILE
+                               AT END
+                                   MOVE "10" TO WS-STATUS
+                               NOT AT END
+                                   IF COMPTE-NUM = WS-INPUT-ID
+                                       ADD WS-INPUT-MONTANT
+                                       TO COMPTE-SOLDE
+                                       REWRITE COMPTE-RECORD
+                                       MOVE "Y" TO WS-FOUND
+                                   END-IF
+                           END-READ
+                       END-PERFORM
+                       
+                       IF WS-FOUND = "N"
+                           DISPLAY "Compte destination non trouve."
+                       END-IF
+                       
+
+   
+
                    END-IF
                END-IF
            END-IF.
@@ -295,4 +344,3 @@
                DISPLAY "Aucun compte trouve pour ce client."
            END-IF.
 
-           
