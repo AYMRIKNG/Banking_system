@@ -1,0 +1,78 @@
+           DISPLAY "=== Generation de releve mensuel ===".
+           DISPLAY "Numero de compte : " WITH NO ADVANCING.
+           ACCEPT WS-INPUT-COMPTE.
+           DISPLAY "Mois du releve (AAAAMM, ex: 202506) : "
+               WITH NO ADVANCING.
+           ACCEPT WS-MOIS.
+
+           STRING "releve_" DELIMITED BY SIZE
+                  WS-INPUT-COMPTE DELIMITED BY SIZE
+                  "_" DELIMITED BY SIZE
+                  WS-MOIS DELIMITED BY SIZE
+                  ".txt" DELIMITED BY SIZE
+                  INTO WS-RELEVE-NOM.
+
+           OPEN OUTPUT RELEVE-FILE.
+
+           MOVE "=== Releve du compte " TO RELEVE-LINE.
+           STRING RELEVE-LINE DELIMITED BY SIZE
+                  WS-INPUT-COMPTE DELIMITED BY SIZE
+                  " - Mois: " DELIMITED BY SIZE
+                  WS-MOIS DELIMITED BY SIZE
+                  INTO RELEVE-LINE.
+           MOVE SPACES TO RELEVE-LINE.
+           MOVE SPACES TO RELEVE-LINE.
+           WRITE RELEVE-LINE.
+
+
+
+           OPEN INPUT TRANSACTION-FILE.
+           MOVE "00" TO WS-STATUS.
+
+           PERFORM UNTIL WS-STATUS = "10"
+               READ TRANSACTION-FILE
+                   AT END
+                       MOVE "10" TO WS-STATUS
+                   NOT AT END
+                       IF TRANSACTION-COMPTE = WS-INPUT-COMPTE
+                           EVALUATE TRUE
+                               WHEN TRANSACTION-TYPE = "Depot"
+                                    MOVE TRANSACTION-DATE(1:6)
+                                        TO WS-TRANSACTION-MOIS
+                               WHEN TRANSACTION-TYPE = "Retrait"
+                                    MOVE TRANSACTION-DATE(1:6)
+                                        TO WS-TRANSACTION-MOIS
+                               WHEN TRANSACTION-TYPE = "Virement"
+                                    MOVE TRANSACTION-DATE(1:6)
+                                        TO WS-TRANSACTION-MOIS
+                           END-EVALUATE
+
+                           IF WS-TRANSACTION-MOIS = WS-MOIS
+                               STRING
+                                   "Date: " DELIMITED BY SIZE
+                                   TRANSACTION-DATE DELIMITED BY SIZE
+                                   " | Type: " DELIMITED BY SIZE
+                                   TRANSACTION-TYPE DELIMITED BY SIZE
+                                   " | Montant: " DELIMITED BY SIZE
+                                   TRANSACTION-MONTANT DELIMITED BY SIZE
+                                   " | Compte: " DELIMITED BY SIZE
+                                   TRANSACTION-COMPTE DELIMITED BY SIZE
+                                   INTO RELEVE-LINE
+
+                               IF TRANSACTION-TYPE = "Virement"
+                                   STRING RELEVE-LINE DELIMITED BY SIZE
+                                      " | Dest: " DELIMITED BY SIZE
+                                      TRANSACTION-DEST DELIMITED BY SIZE
+                                      INTO RELEVE-LINE
+                               END-IF
+
+                               WRITE RELEVE-LINE
+                           END-IF
+                       END-IF
+               END-READ
+           END-PERFORM.
+
+           CLOSE TRANSACTION-FILE.
+           CLOSE RELEVE-FILE.
+
+           DISPLAY "Releve genere : " WS-RELEVE-NOM.
