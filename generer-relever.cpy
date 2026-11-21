@@ -78,6 +78,7 @@
                                     MOVE TRANSACTION-DATE(1:6)
                                         TO WS-TRANSACTION-MOIS
                                WHEN TRANSACTION-TYPE = "Frais"
+                               WHEN TRANSACTION-TYPE = "FraisInter"
                                     MOVE TRANSACTION-DATE(1:6)
                                         TO WS-TRANSACTION-MOIS
                                WHEN TRANSACTION-TYPE = "Annulation"
@@ -93,6 +94,7 @@
                                     MOVE TRANSACTION-DATE(1:6)
                                         TO WS-TRANSACTION-MOIS
                                WHEN TRANSACTION-TYPE = "Commission"
+                               WHEN TRANSACTION-TYPE = "VirInter"
                                     MOVE TRANSACTION-DATE(1:6)
                                         TO WS-TRANSACTION-MOIS
                            END-EVALUATE

@@ -63,6 +63,19 @@ Le menu conseiller est decoupe en sous-menus (option `6. Deconnexion`).
 - Controle integrite des soldes (rapprochement comptes / transactions, rapport dans `controle.txt`)
 - Cloture annuelle / archivage (archive les transactions `<= AAAA` dans `transaction_AAAA.dat`, genere les reports a nouveau `Report` / `ReportDeb` et l'IFU dans `ifu_AAAA.txt`)
 
+**7. International**
+- Consulter les taux de change (`devises.dat`, unites de devise pour 1 EUR)
+- Mettre a jour un taux (devise existante ou nouvelle, taux > 0, journal `TAUX`)
+- Convertir un montant (achat `A` ou vente `V` de devise via `conversion.cbl`, marge bancaire de 1,50 %, affiche taux moyen, taux applique, montant EUR et marge banque)
+- Virement international :
+  - compte source actif, devise existante, montant en devise
+  - validation d'IBAN etranger generique (`iban.cbl`, mode `E` : 2 lettres pays, 2 chiffres cle, 11 a 30 caracteres alphanumeriques, conversion A=10..Z=35, modulo 97 = 1)
+  - validation du BIC (8 ou 11 caracteres : 4 lettres banque, 2 lettres pays, 2 alphanumeriques, 3 alphanumeriques optionnels)
+  - option de frais `SHA` (15.00 EUR) ou `OUR` (25.00 EUR)
+  - transactions `VirInter` (montant EUR) et `FraisInter` (frais du virement), credit de `banque.dat` des frais et de la marge, enregistrement dans `virinter.dat`, journal `VIR INTER`
+  - controle fraude standard + alerte supplementaire `LCB-FT` dans `alerte.dat` des 10000.00 EUR (seuil de declaration de soupcon)
+- Historique des virements internationaux (filtre optionnel par compte, total EUR)
+
 ### Espace client
 Acces restreint au client connecte :
 - **1. Mes comptes** : liste uniquement les comptes du client connecte (avec IBAN)
@@ -74,7 +87,7 @@ Acces restreint au client connecte :
 ## Compiler
 Linux :
 ```
-cobc -x -o Bank Bank.cbl calcul-credit.cbl iban.cbl hachage.cbl scoring.cbl
+cobc -x -o Bank Bank.cbl calcul-credit.cbl iban.cbl hachage.cbl scoring.cbl conversion.cbl
 ./Bank
 ```
 
@@ -102,6 +115,8 @@ Le script met `COB_UNIX_LF=Y`, sinon les REWRITE cassent les fichiers .dat sous 
 - `lot-exemple.txt` : exemple de fichier lot pret a l'emploi
 - `transaction_AAAA.dat` : archive des transactions de l'annee `AAAA` et anterieures
 - `ifu_AAAA.txt` : releve fiscal annuel des interets par client (brut, PFU 30 %, net)
+- `devises.dat` : table des taux de change (code devise, taux pour 1 EUR, date)
+- `virinter.dat` : historique des virements internationaux (cree au premier virement international)
 
 ## Format des fichiers de lot (option 3.8)
 Fichier texte `LINE SEQUENTIAL` (lignes de 60 caracteres max, colonne 1 = type) :

@@ -14,7 +14,8 @@
                            IF TRANSACTION-COMPTE = WS-INPUT-COMPTE
                               AND TRANSACTION-DATE = WS-TODAY
                               AND (TRANSACTION-TYPE = "Retrait"
-                                   OR TRANSACTION-TYPE = "Virement")
+                                   OR TRANSACTION-TYPE = "Virement"
+                                   OR TRANSACTION-TYPE = "VirInter")
                                ADD 1 TO WS-NB-OPS-JOUR
                            END-IF
                    END-READ

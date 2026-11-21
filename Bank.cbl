@@ -67,6 +67,12 @@
            SELECT OPTIONAL DECOUVERT-FILE ASSIGN TO "decouvert.dat"
                ORGANIZATION IS LINE SEQUENTIAL
                FILE STATUS IS WS-STATUS.
+           SELECT OPTIONAL DEVISE-FILE ASSIGN TO "devises.dat"
+               ORGANIZATION IS LINE SEQUENTIAL
+               FILE STATUS IS WS-STATUS.
+           SELECT OPTIONAL VIRINTER-FILE ASSIGN TO "virinter.dat"
+               ORGANIZATION IS LINE SEQUENTIAL
+               FILE STATUS IS WS-STATUS.
 
        DATA DIVISION.
        FILE SECTION.
@@ -187,6 +193,25 @@
        01 DECOUVERT-RECORD.
            05 DEC-COMPTE           PIC 9(10).
            05 DEC-PLAFOND          PIC 9(7)V99.
+       FD DEVISE-FILE.
+       01 DEVISE-RECORD.
+           05 DEV-CODE             PIC X(3).
+           05 DEV-TAUX             PIC 9(4)V9(6).
+           05 DEV-DATE             PIC 9(8).
+
+       FD VIRINTER-FILE.
+       01 VIRINTER-RECORD.
+           05 VI-ID                PIC 9(5).
+           05 VI-DATE              PIC 9(8).
+           05 VI-COMPTE            PIC 9(10).
+           05 VI-DEVISE            PIC X(3).
+           05 VI-MONTANT-DEV       PIC 9(9)V99.
+           05 VI-TAUX-APPL         PIC 9(4)V9(6).
+           05 VI-MONTANT-EUR       PIC 9(9)V99.
+           05 VI-FRAIS             PIC 9(9)V99.
+           05 VI-IBAN              PIC X(34).
+           05 VI-BIC               PIC X(11).
+           05 VI-OPTION            PIC X(3).
          
 
        WORKING-STORAGE SECTION.
@@ -279,7 +304,7 @@
        01 WS-CALCUL-IBAN.
            05 WS-IBAN-MODE         PIC X.
            05 WS-IBAN-COMPTE       PIC 9(10).
-           05 WS-IBAN-TEXTE        PIC X(27).
+           05 WS-IBAN-TEXTE        PIC X(34).
            05 WS-IBAN-AFFICHE      PIC X(34).
            05 WS-IBAN-RETOUR       PIC 9.
 
@@ -596,6 +621,46 @@
            05 WS-AG-AFF-DEC        PIC Z(6)9.99.
            05 WS-AG-AFF-TAUX       PIC Z9.99.
            05 WS-AG-LIGNE          PIC X(80).
+       01 WS-CONVERSION.
+           05 WS-CONV-MODE         PIC X.
+           05 WS-CONV-TAUX-MOYEN   PIC 9(4)V9(6).
+           05 WS-CONV-MONTANT-DEV  PIC 9(9)V99.
+           05 WS-CONV-MARGE-PCT    PIC 9V99.
+           05 WS-CONV-TAUX-APPL    PIC 9(4)V9(6).
+           05 WS-CONV-MONTANT-EUR  PIC 9(9)V99.
+           05 WS-CONV-RETOUR       PIC 9.
+
+       01 WS-INTERNATIONAL.
+           05 WS-MARGE-DEFAUT      PIC 9V99 VALUE 1.50.
+           05 WS-SEUIL-LCB-FT      PIC 9(9)V99 VALUE 10000.00.
+           05 WS-DEV-CODE          PIC X(3).
+           05 WS-DEV-TAUX-SAISIE   PIC 9(4)V9(6).
+           05 WS-DEV-TAUX-LU       PIC 9(4)V9(6).
+           05 WS-DEV-TAUX-AFF      PIC Z(3)9.9(6).
+           05 WS-DEV-MONTANT       PIC 9(9)V99.
+           05 WS-DEV-SENS          PIC X.
+           05 WS-DEV-EUR-MOYEN     PIC 9(9)V99.
+           05 WS-DEV-DIFF-EUR      PIC S9(9)V99.
+           05 WS-DEV-MARGE-EUR     PIC 9(9)V99.
+           05 WS-DEV-NB            PIC 9(5).
+           05 WS-DEV-OK            PIC X.
+           05 WS-VI-IBAN-SAISIE    PIC X(40).
+           05 WS-VI-IBAN           PIC X(34).
+           05 WS-VI-BIC-SAISIE     PIC X(20).
+           05 WS-VI-BIC            PIC X(11).
+           05 WS-VI-BIC-LEN        PIC 9(2).
+           05 WS-VI-IDX            PIC 9(2).
+           05 WS-VI-CAR            PIC X.
+           05 WS-VI-OPTION         PIC X(3).
+           05 WS-VI-FRAIS          PIC 9(9)V99.
+           05 WS-VI-TOTAL-DEBIT    PIC 9(9)V99.
+           05 WS-VI-GAIN-BANQUE    PIC 9(9)V99.
+           05 WS-MAX-VI-ID         PIC 9(5).
+           05 WS-VI-NB             PIC 9(5).
+           05 WS-VI-TOTAL-EUR      PIC 9(9)V99.
+           05 WS-VI-AFF-DEV        PIC Z(8)9.99.
+           05 WS-VI-AFF-EUR        PIC Z(8)9.99.
+           05 WS-VI-AFF-FRAIS      PIC Z(8)9.99.
 
        PROCEDURE DIVISION.
 
@@ -661,6 +726,7 @@
            DISPLAY "4. Credits".
            DISPLAY "5. Banque".
            DISPLAY "6. Deconnexion".
+           DISPLAY "7. International".
            DISPLAY "Choisissez une option : " WITH NO ADVANCING.
            ACCEPT CHOIX.
 
@@ -677,6 +743,8 @@
                    PERFORM MENU-BANQUE
                WHEN 6
                    MOVE "O" TO WS-DECONNEXION
+               WHEN 7
+                   PERFORM MENU-INTERNATIONAL
                WHEN OTHER
                    DISPLAY "Option invalide."
            END-EVALUATE.
@@ -833,6 +901,34 @@
                    DISPLAY "Option invalide."
            END-EVALUATE.
 
+       MENU-INTERNATIONAL.
+           DISPLAY "---- INTERNATIONAL ----".
+           DISPLAY "1. Consulter les taux".
+           DISPLAY "2. Mettre a jour un taux".
+           DISPLAY "3. Convertir un montant".
+           DISPLAY "4. Virement international".
+           DISPLAY "5. Historique virements internationaux".
+           DISPLAY "9. Retour".
+           DISPLAY "Choisissez une option : " WITH NO ADVANCING.
+           ACCEPT SOUS-CHOIX.
+
+           EVALUATE SOUS-CHOIX
+               WHEN 1
+                   PERFORM CONSULTER-TAUX
+               WHEN 2
+                   PERFORM MAJ-TAUX
+               WHEN 3
+                   PERFORM CONVERTIR-MONTANT
+               WHEN 4
+                   PERFORM VIREMENT-INTERNATIONAL
+               WHEN 5
+                   PERFORM HISTORIQUE-VIRINTER
+               WHEN 9
+                   CONTINUE
+               WHEN OTHER
+                   DISPLAY "Option invalide."
+           END-EVALUATE.
+
        AJOUTER-CLIENT.
            COPY "ajouter-client.cpy".
 
@@ -967,6 +1063,20 @@
 
        PRELEVER-AGIOS.
            COPY "prelever-agios.cpy".
+       CONSULTER-TAUX.
+           COPY "consulter-taux.cpy".
+
+       MAJ-TAUX.
+           COPY "maj-taux.cpy".
+
+       CONVERTIR-MONTANT.
+           COPY "convertir-montant.cpy".
+
+       VIREMENT-INTERNATIONAL.
+           COPY "virement-international.cpy".
+
+       HISTORIQUE-VIRINTER.
+           COPY "historique-virinter.cpy".
 
 
        

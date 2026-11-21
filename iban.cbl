@@ -17,6 +17,11 @@
        77 WS-IDX                   PIC 9(2).
        77 WS-CHIFFRE               PIC 9.
        77 WS-RESTE                 PIC 9(4).
+       77 WS-LEN                   PIC 9(2).
+       77 WS-CAR                   PIC X.
+       77 WS-VAL-LETTRE            PIC 9(2).
+       77 WS-D1                    PIC 9.
+       77 WS-D2                    PIC 9.
 
        01 WS-BBAN.
            05 WS-BBAN-BANQUE       PIC X(5) VALUE "30001".
@@ -29,7 +34,7 @@
        01 LK-IBAN.
            05 LK-IBAN-MODE         PIC X.
            05 LK-IBAN-COMPTE       PIC 9(10).
-           05 LK-IBAN-TEXTE        PIC X(27).
+           05 LK-IBAN-TEXTE        PIC X(34).
            05 LK-IBAN-AFFICHE      PIC X(34).
            05 LK-IBAN-RETOUR       PIC 9.
 
@@ -43,6 +48,8 @@
                    PERFORM GENERER-IBAN
                WHEN "V"
                    PERFORM VALIDER-IBAN
+               WHEN "E"
+                   PERFORM VALIDER-IBAN-ETRANGER
                WHEN OTHER
                    MOVE 1 TO LK-IBAN-RETOUR
            END-EVALUATE.
@@ -95,6 +102,10 @@
                EXIT PARAGRAPH
            END-IF.
 
+           IF LK-IBAN-TEXTE(28:7) NOT = SPACES
+               EXIT PARAGRAPH
+           END-IF.
+
            PERFORM VARYING WS-IDX FROM 3 BY 1 UNTIL WS-IDX > 27
                IF LK-IBAN-TEXTE(WS-IDX:1) < "0"
                    OR LK-IBAN-TEXTE(WS-IDX:1) > "9"
@@ -142,3 +153,74 @@
                   LK-IBAN-TEXTE(25:3) DELIMITED BY SIZE
                   INTO LK-IBAN-AFFICHE
            END-STRING.
+
+       VALIDER-IBAN-ETRANGER.
+           MOVE ZEROS TO LK-IBAN-COMPTE.
+           MOVE SPACES TO LK-IBAN-AFFICHE.
+           MOVE 1 TO LK-IBAN-RETOUR.
+
+           MOVE ZEROS TO WS-LEN.
+           PERFORM VARYING WS-IDX FROM 34 BY -1
+               UNTIL WS-IDX < 1 OR WS-LEN > 0
+               IF LK-IBAN-TEXTE(WS-IDX:1) NOT = SPACE
+                   MOVE WS-IDX TO WS-LEN
+               END-IF
+           END-PERFORM.
+
+           IF WS-LEN < 15 OR WS-LEN > 34
+               EXIT PARAGRAPH
+           END-IF.
+
+           PERFORM VARYING WS-IDX FROM 1 BY 1 UNTIL WS-IDX > 2
+               MOVE LK-IBAN-TEXTE(WS-IDX:1) TO WS-CAR
+               IF WS-CAR < "A" OR WS-CAR > "Z"
+                   EXIT PARAGRAPH
+               END-IF
+           END-PERFORM.
+
+           PERFORM VARYING WS-IDX FROM 3 BY 1 UNTIL WS-IDX > 4
+               MOVE LK-IBAN-TEXTE(WS-IDX:1) TO WS-CAR
+               IF WS-CAR < "0" OR WS-CAR > "9"
+                   EXIT PARAGRAPH
+               END-IF
+           END-PERFORM.
+
+           PERFORM VARYING WS-IDX FROM 5 BY 1 UNTIL WS-IDX > WS-LEN
+               MOVE LK-IBAN-TEXTE(WS-IDX:1) TO WS-CAR
+               IF NOT ((WS-CAR >= "0" AND WS-CAR <= "9")
+                       OR (WS-CAR >= "A" AND WS-CAR <= "Z"))
+                   EXIT PARAGRAPH
+               END-IF
+           END-PERFORM.
+
+           MOVE 0 TO WS-RESTE.
+           PERFORM VARYING WS-IDX FROM 5 BY 1 UNTIL WS-IDX > WS-LEN
+               MOVE LK-IBAN-TEXTE(WS-IDX:1) TO WS-CAR
+               PERFORM AJOUTER-CAR-MOD97
+           END-PERFORM.
+
+           PERFORM VARYING WS-IDX FROM 1 BY 1 UNTIL WS-IDX > 4
+               MOVE LK-IBAN-TEXTE(WS-IDX:1) TO WS-CAR
+               PERFORM AJOUTER-CAR-MOD97
+           END-PERFORM.
+
+           IF WS-RESTE = 1
+               MOVE LK-IBAN-TEXTE TO LK-IBAN-AFFICHE
+               MOVE 0 TO LK-IBAN-RETOUR
+           END-IF.
+
+       AJOUTER-CAR-MOD97.
+           IF WS-CAR >= "0" AND WS-CAR <= "9"
+               MOVE WS-CAR TO WS-CHIFFRE
+               COMPUTE WS-RESTE =
+                   FUNCTION MOD(WS-RESTE * 10 + WS-CHIFFRE, 97)
+           ELSE
+               COMPUTE WS-VAL-LETTRE =
+                   FUNCTION ORD(WS-CAR) - FUNCTION ORD("A") + 10
+               DIVIDE WS-VAL-LETTRE BY 10
+                   GIVING WS-D1 REMAINDER WS-D2
+               COMPUTE WS-RESTE =
+                   FUNCTION MOD(WS-RESTE * 10 + WS-D1, 97)
+               COMPUTE WS-RESTE =
+                   FUNCTION MOD(WS-RESTE * 10 + WS-D2, 97)
+           END-IF.
