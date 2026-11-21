@@ -45,3 +45,31 @@
            DISPLAY "Mensualites prelevees : " WS-NB-PRELEVES.
            DISPLAY "Total preleve : " WS-TOTAL-PRELEVE.
            DISPLAY "Impayes : " WS-NB-IMPAYES.
+
+      *    3. Virements permanents
+           DISPLAY "--- Virements permanents ---".
+           MOVE ZEROS TO WS-NB-VIREMENTS-OK.
+           MOVE ZEROS TO WS-NB-VIREMENTS-ECHEC.
+           MOVE "N" TO WS-FIN-VIREMENTS.
+
+           OPEN I-O VIREMENT-FILE.
+           OPEN EXTEND TRANSACTION-FILE.
+
+      *    WS-STATUS sert aussi au fichier compte : drapeau a part
+           PERFORM UNTIL WS-FIN-VIREMENTS = "O"
+               READ VIREMENT-FILE
+                   AT END
+                       MOVE "O" TO WS-FIN-VIREMENTS
+                   NOT AT END
+                       IF VP-ACTIF = "O"
+                          AND VP-DERNIER-MOIS NOT = WS-TODAY(1:6)
+                           PERFORM EXECUTER-VIREMENT
+                       END-IF
+               END-READ
+           END-PERFORM.
+
+           CLOSE TRANSACTION-FILE.
+           CLOSE VIREMENT-FILE.
+
+           DISPLAY "Virements effectues : " WS-NB-VIREMENTS-OK.
+           DISPLAY "Virements en echec : " WS-NB-VIREMENTS-ECHEC.

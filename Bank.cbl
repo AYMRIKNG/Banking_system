@@ -30,6 +30,9 @@
            SELECT CSV-FILE ASSIGN TO "transactions.csv"
                ORGANIZATION IS LINE SEQUENTIAL
                FILE STATUS IS WS-STATUS.
+           SELECT OPTIONAL VIREMENT-FILE ASSIGN TO "virement.dat"
+               ORGANIZATION IS LINE SEQUENTIAL
+               FILE STATUS IS WS-STATUS.
 
        DATA DIVISION.
        FILE SECTION.
@@ -84,6 +87,15 @@
 
        FD CSV-FILE.
        01 CSV-LINE                PIC X(100).
+
+       FD VIREMENT-FILE.
+       01 VIREMENT-RECORD.
+           05 VP-ID                PIC 9(5).
+           05 VP-SOURCE            PIC 9(10).
+           05 VP-DEST              PIC 9(10).
+           05 VP-MONTANT           PIC 9(9)V99.
+           05 VP-ACTIF             PIC X.
+           05 VP-DERNIER-MOIS      PIC 9(6).
          
 
        WORKING-STORAGE SECTION.
@@ -139,6 +151,17 @@
            05 WS-TOTAL-PRELEVE     PIC 9(9)V99.
            05 WS-NB-PRELEVES       PIC 9(5).
            05 WS-NB-IMPAYES        PIC 9(5).
+
+       01 WS-VIREMENTS.
+           05 WS-FIN-VIREMENTS     PIC X.
+           05 WS-NB-VIREMENTS-OK   PIC 9(5).
+           05 WS-NB-VIREMENTS-ECHEC PIC 9(5).
+           05 WS-MAX-VP-ID         PIC 9(5).
+           05 WS-INPUT-VP-ID       PIC 9(5).
+           05 WS-VP-SOURCE         PIC 9(10).
+           05 WS-VP-DEST           PIC 9(10).
+           05 WS-VP-MONTANT        PIC 9(9)V99.
+           05 WS-VP-NB-ACTIFS      PIC 9(5).
 
        01 WS-STATS.
            05 WS-NB-COURANT        PIC 9(5).
@@ -305,6 +328,8 @@
            DISPLAY "2. Historique des transactions".
            DISPLAY "3. Generer releve".
            DISPLAY "4. Export CSV".
+           DISPLAY "5. Creer virement permanent".
+           DISPLAY "6. Arreter virement permanent".
            DISPLAY "9. Retour".
            DISPLAY "Choisissez une option : " WITH NO ADVANCING.
            ACCEPT SOUS-CHOIX.
@@ -318,6 +343,10 @@
                    PERFORM GENERER-RELEVE
                WHEN 4
                    PERFORM EXPORT-CSV
+               WHEN 5
+                   PERFORM CREER-VIREMENT
+               WHEN 6
+                   PERFORM ARRETER-VIREMENT
                WHEN 9
                    CONTINUE
                WHEN OTHER
@@ -412,6 +441,15 @@
 
        EXPORT-CSV.
            COPY "export-csv.cpy".
+
+       CREER-VIREMENT.
+           COPY "creer-virement.cpy".
+
+       ARRETER-VIREMENT.
+           COPY "arreter-virement.cpy".
+
+       EXECUTER-VIREMENT.
+           COPY "executer-virement.cpy".
 
 
        
