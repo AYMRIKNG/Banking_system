@@ -72,7 +72,7 @@
        77 WS-STATUS           PIC XX VALUE "00".
        77 CHOIX               PIC 9.
        77 QUITTER             PIC X VALUE "N".
-       77 WS-TODAY            PIC 9(8) VALUE 20250616.
+       77 WS-TODAY            PIC 9(8).
        77 WS-COMPTE-CHOIX     PIC 9(10).
         77 WS-RELEVE-NOM       PIC X(50).
           77 WS-MOIS             PIC 9(6).  *> Format AAAAMM
@@ -138,6 +138,9 @@
            STOP RUN.
 
        INITIALISER-BANQUE.
+      *    Date du jour au format AAAAMMJJ
+           MOVE FUNCTION CURRENT-DATE(1:8) TO WS-TODAY.
+
            OPEN I-O BANQUE-FILE
            IF WS-STATUS NOT = "00"
                DISPLAY "Erreur ouverture fichier banque: " WS-STATUS
