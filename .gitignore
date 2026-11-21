@@ -9,3 +9,5 @@ pin.dat
 controle.txt
 rejets.txt
 lots.dat
+transaction_*.dat
+ifu_*.txt

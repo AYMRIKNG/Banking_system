@@ -58,6 +58,12 @@
            SELECT REJET-FILE ASSIGN TO "rejets.txt"
                ORGANIZATION IS LINE SEQUENTIAL
                FILE STATUS IS WS-STATUS.
+           SELECT ARCHIVE-FILE ASSIGN TO WS-ARCHIVE-NOM
+               ORGANIZATION IS LINE SEQUENTIAL
+               FILE STATUS IS WS-STATUS.
+           SELECT IFU-FILE ASSIGN TO WS-IFU-NOM
+               ORGANIZATION IS LINE SEQUENTIAL
+               FILE STATUS IS WS-STATUS.
 
        DATA DIVISION.
        FILE SECTION.
@@ -167,6 +173,12 @@
 
        FD REJET-FILE.
        01 REJET-LINE               PIC X(130).
+
+       FD ARCHIVE-FILE.
+       01 ARCHIVE-RECORD           PIC X(59).
+
+       FD IFU-FILE.
+       01 IFU-LINE                 PIC X(100).
          
 
        WORKING-STORAGE SECTION.
@@ -408,17 +420,26 @@
            05 WS-TAB-COMPTES OCCURS 500 TIMES
                INDEXED BY WS-CI-IDX-C.
                10 WS-TC-NUM        PIC 9(10).
+               10 WS-TC-CLIENT-ID  PIC 9(5).
                10 WS-TC-SOLDE-FIC  PIC 9(9)V99.
                10 WS-TC-SOLDE-REC  PIC S9(9)V99.
+               10 WS-TC-REPORT     PIC 9(9)V99.
+               10 WS-TC-INTERET    PIC 9(9)V99.
            05 WS-TAB-TRANS OCCURS 3000 TIMES
                INDEXED BY WS-CI-IDX-T.
                10 WS-TT-ID         PIC 9(10).
                10 WS-TT-COMPTE     PIC 9(10).
+               10 WS-TT-DATE       PIC 9(8).
+               10 WS-TT-DATE-R REDEFINES WS-TT-DATE.
+                   15 WS-TT-ANNEE  PIC 9(4).
+                   15 WS-TT-MMJJ   PIC 9(4).
                10 WS-TT-TYPE       PIC A(10).
                10 WS-TT-MONTANT    PIC 9(9)V99.
                10 WS-TT-DEST       PIC 9(10).
+               10 WS-TT-RAW        PIC X(59).
            05 WS-CI-I              PIC 9(4).
            05 WS-CI-TROP-PLEIN     PIC X.
+           05 WS-CI-ERREUR         PIC X.
            05 WS-CI-NB-OK          PIC 9(4).
            05 WS-CI-NB-ECART       PIC 9(4).
            05 WS-CI-NB-ANOMALIES   PIC 9(4).
@@ -483,6 +504,29 @@
            05 WS-LOT-SOLDE-SRC     PIC 9(9)V99.
            05 WS-LOT-TYPE-SRC      PIC A(10).
            05 WS-LOT-TYPE-DEST     PIC A(10).
+
+       01 WS-ARCHIVAGE.
+           05 WS-ARCHIVE-NOM       PIC X(30).
+           05 WS-IFU-NOM           PIC X(30).
+           05 WS-ARCH-ANNEE        PIC 9(4).
+           05 WS-ARCH-ANNEE-COUR   PIC 9(4).
+           05 WS-ARCH-DATE-REP     PIC 9(8).
+           05 WS-ARCH-NB-ARCH      PIC 9(4).
+           05 WS-ARCH-NB-GARDE     PIC 9(4).
+           05 WS-ARCH-NB-REPORTS   PIC 9(4).
+           05 WS-ARCH-REPORT       PIC S9(10)V99.
+           05 WS-ARCH-ERREUR       PIC X.
+           05 WS-ARCH-FIN-CLI      PIC X.
+           05 WS-ARCH-LIGNE        PIC X(100).
+           05 WS-IFU-BRUT          PIC 9(9)V99.
+           05 WS-IFU-PFU           PIC 9(9)V99.
+           05 WS-IFU-NET           PIC 9(9)V99.
+           05 WS-IFU-TOT-BRUT      PIC 9(9)V99.
+           05 WS-IFU-TOT-PFU       PIC 9(9)V99.
+           05 WS-IFU-TOT-NET       PIC 9(9)V99.
+           05 WS-IFU-AFF-BRUT      PIC Z(8)9.99.
+           05 WS-IFU-AFF-PFU       PIC Z(8)9.99.
+           05 WS-IFU-AFF-NET       PIC Z(8)9.99.
 
        PROCEDURE DIVISION.
 
@@ -686,6 +730,7 @@
            DISPLAY "5. Consulter journal".
            DISPLAY "6. Alertes fraude".
            DISPLAY "7. Controle integrite des soldes".
+           DISPLAY "8. Cloture annuelle / archivage".
            DISPLAY "9. Retour".
            DISPLAY "Choisissez une option : " WITH NO ADVANCING.
            ACCEPT SOUS-CHOIX.
@@ -705,6 +750,8 @@
                    PERFORM ALERTES-FRAUDE
                WHEN 7
                    PERFORM CONTROLE-INTEGRITE
+               WHEN 8
+                   PERFORM CLOTURE-ANNUELLE
                WHEN 9
                    CONTINUE
                WHEN OTHER
@@ -818,6 +865,15 @@
 
        CONTROLE-INTEGRITE.
            COPY "controle-integrite.cpy".
+
+       CHARGER-COMPTES-TRANS.
+           COPY "charger-comptes-trans.cpy".
+
+       REJOUER-TRANSACTION.
+           COPY "rejouer-transaction.cpy".
+
+       CLOTURE-ANNUELLE.
+           COPY "cloture-annuelle.cpy".
 
        TRAITEMENT-LOT.
            COPY "traitement-lot.cpy".

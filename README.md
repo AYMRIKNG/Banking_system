@@ -57,6 +57,7 @@ Le menu conseiller est decoupe en sous-menus (option `6. Deconnexion`).
 - Consulter le journal d'audit (`journal.log`, filtre par date)
 - Alertes fraude (consulter et marquer comme traitees)
 - Controle integrite des soldes (rapprochement comptes / transactions, rapport dans `controle.txt`)
+- Cloture annuelle / archivage (archive les transactions `<= AAAA` dans `transaction_AAAA.dat`, genere les reports a nouveau et l'IFU dans `ifu_AAAA.txt`)
 
 ### Espace client
 Acces restreint au client connecte :
@@ -94,6 +95,8 @@ Le script met `COB_UNIX_LF=Y`, sinon les REWRITE cassent les fichiers .dat sous 
 - `lots.dat` : historique des lots deja traites (anti-doublon)
 - `rejets.txt` : lignes rejetees lors du dernier traitement par lot
 - `lot-exemple.txt` : exemple de fichier lot pret a l'emploi
+- `transaction_AAAA.dat` : archive des transactions de l'annee `AAAA` et anterieures
+- `ifu_AAAA.txt` : releve fiscal annuel des interets par client (brut, PFU 30 %, net)
 
 ## Format des fichiers de lot (option 3.8)
 Fichier texte `LINE SEQUENTIAL` (lignes de 60 caracteres max, colonne 1 = type) :

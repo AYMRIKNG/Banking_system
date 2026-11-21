@@ -51,6 +51,7 @@
                        MOVE "10" TO WS-STATUS
                    NOT AT END
                        IF TRANSACTION-COMPTE = WS-INPUT-COMPTE
+                           MOVE ZEROS TO WS-TRANSACTION-MOIS
                            EVALUATE TRUE
                                WHEN TRANSACTION-TYPE = "Ouverture"
                                     MOVE TRANSACTION-DATE(1:6)
@@ -82,19 +83,45 @@
                                WHEN TRANSACTION-TYPE = "Annulation"
                                     MOVE TRANSACTION-DATE(1:6)
                                         TO WS-TRANSACTION-MOIS
+                               WHEN TRANSACTION-TYPE = "Report"
+                                    MOVE TRANSACTION-DATE(1:6)
+                                        TO WS-TRANSACTION-MOIS
                            END-EVALUATE
 
                            IF WS-TRANSACTION-MOIS = WS-MOIS
-                               STRING
-                                   "Date: " DELIMITED BY SIZE
-                                   TRANSACTION-DATE DELIMITED BY SIZE
-                                   " | Type: " DELIMITED BY SIZE
-                                   TRANSACTION-TYPE DELIMITED BY SIZE
-                                   " | Montant: " DELIMITED BY SIZE
-                                   TRANSACTION-MONTANT DELIMITED BY SIZE
-                                   " | Compte: " DELIMITED BY SIZE
-                                   TRANSACTION-COMPTE DELIMITED BY SIZE
-                                   INTO RELEVE-LINE
+                               MOVE SPACES TO RELEVE-LINE
+                               IF TRANSACTION-TYPE = "Report"
+                                   STRING
+                                       "Date: " DELIMITED BY SIZE
+                                       TRANSACTION-DATE
+                                           DELIMITED BY SIZE
+                                       " | Type: Report a nouveau"
+                                           DELIMITED BY SIZE
+                                       " | Montant: " DELIMITED BY SIZE
+                                       TRANSACTION-MONTANT
+                                           DELIMITED BY SIZE
+                                       " | Compte: " DELIMITED BY SIZE
+                                       TRANSACTION-COMPTE
+                                           DELIMITED BY SIZE
+                                       INTO RELEVE-LINE
+                                   END-STRING
+                               ELSE
+                                   STRING
+                                       "Date: " DELIMITED BY SIZE
+                                       TRANSACTION-DATE
+                                           DELIMITED BY SIZE
+                                       " | Type: " DELIMITED BY SIZE
+                                       TRANSACTION-TYPE
+                                           DELIMITED BY SIZE
+                                       " | Montant: " DELIMITED BY SIZE
+                                       TRANSACTION-MONTANT
+                                           DELIMITED BY SIZE
+                                       " | Compte: " DELIMITED BY SIZE
+                                       TRANSACTION-COMPTE
+                                           DELIMITED BY SIZE
+                                       INTO RELEVE-LINE
+                                   END-STRING
+                               END-IF
 
                                IF TRANSACTION-TYPE = "Virement"
                                    STRING RELEVE-LINE DELIMITED BY SIZE
