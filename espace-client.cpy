@@ -3,6 +3,7 @@
            DISPLAY "2. Historique d'un compte".
            DISPLAY "3. Effectuer un virement".
            DISPLAY "4. Changer mon PIN".
+           DISPLAY "5. Faire opposition sur ma carte".
            DISPLAY "9. Deconnexion".
            DISPLAY "Choisissez une option : " WITH NO ADVANCING.
            ACCEPT SOUS-CHOIX.
@@ -114,6 +115,9 @@
                        INTO WS-JOURNAL-DETAIL
                    END-STRING
                    PERFORM ECRIRE-JOURNAL
+
+               WHEN 5
+                   PERFORM OPPOSITION-CARTE
 
                WHEN 9
                    MOVE "O" TO WS-DECONNEXION

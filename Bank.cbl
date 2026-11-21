@@ -73,6 +73,12 @@
            SELECT OPTIONAL VIRINTER-FILE ASSIGN TO "virinter.dat"
                ORGANIZATION IS LINE SEQUENTIAL
                FILE STATUS IS WS-STATUS.
+           SELECT OPTIONAL CARTE-FILE ASSIGN TO "carte.dat"
+               ORGANIZATION IS LINE SEQUENTIAL
+               FILE STATUS IS WS-STATUS.
+           SELECT OPTIONAL PAIEMENT-FILE ASSIGN TO "paiement.dat"
+               ORGANIZATION IS LINE SEQUENTIAL
+               FILE STATUS IS WS-STATUS.
 
        DATA DIVISION.
        FILE SECTION.
@@ -212,6 +218,24 @@
            05 VI-IBAN              PIC X(34).
            05 VI-BIC               PIC X(11).
            05 VI-OPTION            PIC X(3).
+
+       FD CARTE-FILE.
+       01 CARTE-RECORD.
+           05 CARTE-NUM            PIC X(16).
+           05 CARTE-COMPTE         PIC 9(10).
+           05 CARTE-EXPIRATION     PIC 9(6).
+           05 CARTE-CVV-HASH       PIC 9(10).
+           05 CARTE-PLAFOND        PIC 9(7)V99.
+           05 CARTE-STATUT         PIC X.
+           05 CARTE-ESSAIS         PIC 9.
+
+       FD PAIEMENT-FILE.
+       01 PAIEMENT-RECORD.
+           05 PAI-CARTE-NUM        PIC X(16).
+           05 PAI-DATE             PIC 9(8).
+           05 PAI-COMMERCANT       PIC X(20).
+           05 PAI-MONTANT          PIC 9(9)V99.
+           05 PAI-RESULTAT         PIC X(3).
          
 
        WORKING-STORAGE SECTION.
@@ -662,6 +686,70 @@
            05 WS-VI-AFF-EUR        PIC Z(8)9.99.
            05 WS-VI-AFF-FRAIS      PIC Z(8)9.99.
 
+       01 WS-LUHN.
+           05 WS-LUHN-MODE         PIC X.
+           05 WS-LUHN-NUMERO       PIC X(16).
+           05 WS-LUHN-CHIFFRE      PIC 9.
+           05 WS-LUHN-RETOUR       PIC 9.
+
+       01 WS-CARTE.
+           05 WS-CB-STATUS         PIC XX.
+           05 WS-CB-NUM-BRUT       PIC X(16).
+           05 WS-CB-NUM-MASQUE     PIC X(19).
+           05 WS-CB-SAISIE-NUM     PIC X(20).
+           05 WS-CB-SAISIE-EXP-X   PIC X(10).
+           05 WS-CB-SAISIE-EXP     PIC 9(6).
+           05 WS-CB-SAISIE-CVV     PIC X(20).
+           05 WS-CB-COMMERCANT     PIC X(20).
+           05 WS-CB-PLAFOND-SAISIE PIC 9(7)V99.
+           05 WS-CB-MAX-SEQ        PIC 9(7).
+           05 WS-CB-SEQ-LU         PIC 9(7).
+           05 WS-CB-EXP            PIC 9(6).
+           05 WS-CB-EXP-R REDEFINES WS-CB-EXP.
+               10 WS-CB-EXP-AA     PIC 9(4).
+               10 WS-CB-EXP-MM     PIC 9(2).
+           05 WS-CB-MOIS-COUR      PIC 9(6).
+           05 WS-CB-CVV-BASE       PIC 9(7).
+           05 WS-CB-CVV-NUM        PIC 9(3).
+           05 WS-CB-CVV-STR REDEFINES WS-CB-CVV-NUM
+                                   PIC X(3).
+           05 WS-CB-SEL-4          PIC 9(4).
+           05 WS-CB-CARTE-NUM      PIC X(16).
+           05 WS-CB-CARTE-COMPTE   PIC 9(10).
+           05 WS-CB-CARTE-EXP      PIC 9(6).
+           05 WS-CB-CARTE-HASH     PIC 9(10).
+           05 WS-CB-CARTE-PLAFOND  PIC 9(7)V99.
+           05 WS-CB-CARTE-STATUT   PIC X.
+           05 WS-CB-CARTE-ESSAIS   PIC 9.
+           05 WS-CB-CODE-RES       PIC X(3).
+           05 WS-CB-CVV-OK         PIC X.
+           05 WS-CB-AUTO-OPP       PIC X.
+           05 WS-CB-JOUR-AUJ       PIC 9(8).
+           05 WS-CB-JOUR-LIM       PIC 9(8).
+           05 WS-CB-JOUR-PAI       PIC 9(8).
+           05 WS-CB-CONSO-7J       PIC 9(9)V99.
+           05 WS-CB-TOTAL-7J       PIC 9(10)V99.
+           05 WS-CB-MOTIF-CHOIX    PIC 9.
+           05 WS-CB-MOTIF-LIB      PIC X(10).
+           05 WS-CB-MODE-RECH      PIC X.
+           05 WS-CB-PLAF-AFF       PIC Z(6)9.99.
+           05 WS-CB-CONSO-AFF      PIC Z(8)9.99.
+           05 WS-CB-NB-COMPTES     PIC 9(2).
+           05 WS-CB-TAB-COMPTES OCCURS 50 TIMES.
+               10 WS-CB-CPT        PIC 9(10).
+           05 WS-CB-NB-CARTES      PIC 9(2).
+           05 WS-CB-TAB-CARTES OCCURS 50 TIMES.
+               10 WS-CB-TC-NUM     PIC X(16).
+               10 WS-CB-TC-COMPTE  PIC 9(10).
+               10 WS-CB-TC-EXP     PIC 9(6).
+               10 WS-CB-TC-PLAFOND PIC 9(7)V99.
+               10 WS-CB-TC-STATUT  PIC X.
+               10 WS-CB-TC-CONSO   PIC 9(9)V99.
+           05 WS-CB-I              PIC 9(2).
+           05 WS-CB-J              PIC 9(2).
+           05 WS-CB-MATCH          PIC X.
+           05 WS-CB-STATUT-LIB     PIC X(10).
+
        PROCEDURE DIVISION.
 
        MAIN-PROGRAM.
@@ -727,6 +815,7 @@
            DISPLAY "5. Banque".
            DISPLAY "6. Deconnexion".
            DISPLAY "7. International".
+           DISPLAY "8. Moyens de paiement".
            DISPLAY "Choisissez une option : " WITH NO ADVANCING.
            ACCEPT CHOIX.
 
@@ -745,6 +834,8 @@
                    MOVE "O" TO WS-DECONNEXION
                WHEN 7
                    PERFORM MENU-INTERNATIONAL
+               WHEN 8
+                   PERFORM MENU-PAIEMENT
                WHEN OTHER
                    DISPLAY "Option invalide."
            END-EVALUATE.
@@ -929,6 +1020,31 @@
                    DISPLAY "Option invalide."
            END-EVALUATE.
 
+       MENU-PAIEMENT.
+           DISPLAY "---- MOYENS DE PAIEMENT ----".
+           DISPLAY "1. Emettre une carte".
+           DISPLAY "2. Paiement par carte".
+           DISPLAY "3. Opposition sur une carte".
+           DISPLAY "4. Cartes d'un client".
+           DISPLAY "9. Retour".
+           DISPLAY "Choisissez une option : " WITH NO ADVANCING.
+           ACCEPT SOUS-CHOIX.
+
+           EVALUATE SOUS-CHOIX
+               WHEN 1
+                   PERFORM EMETTRE-CARTE
+               WHEN 2
+                   PERFORM PAIEMENT-CARTE
+               WHEN 3
+                   PERFORM OPPOSITION-CARTE
+               WHEN 4
+                   PERFORM LISTER-CARTES-CLIENT
+               WHEN 9
+                   CONTINUE
+               WHEN OTHER
+                   DISPLAY "Option invalide."
+           END-EVALUATE.
+
        AJOUTER-CLIENT.
            COPY "ajouter-client.cpy".
 
@@ -1077,6 +1193,58 @@
 
        HISTORIQUE-VIRINTER.
            COPY "historique-virinter.cpy".
+
+       EMETTRE-CARTE.
+           COPY "emettre-carte.cpy".
+
+       PAIEMENT-CARTE.
+           COPY "paiement-carte.cpy".
+
+       OPPOSITION-CARTE.
+           COPY "opposition-carte.cpy".
+
+       LISTER-CARTES-CLIENT.
+           COPY "cartes-client.cpy".
+
+       MASQUER-CARTE.
+           MOVE SPACES TO WS-CB-NUM-MASQUE.
+           STRING WS-CB-NUM-BRUT(1:4) DELIMITED BY SIZE
+               " " DELIMITED BY SIZE
+               WS-CB-NUM-BRUT(5:2) DELIMITED BY SIZE
+               "XX XXXX " DELIMITED BY SIZE
+               WS-CB-NUM-BRUT(13:4) DELIMITED BY SIZE
+               INTO WS-CB-NUM-MASQUE
+           END-STRING.
+
+       ENREGISTRER-PAIEMENT.
+           MOVE WS-STATUS TO WS-CB-STATUS.
+           MOVE "00" TO WS-STATUS.
+           OPEN EXTEND PAIEMENT-FILE.
+           IF WS-STATUS = "00" OR WS-STATUS = "05"
+               MOVE WS-CB-CARTE-NUM  TO PAI-CARTE-NUM
+               MOVE WS-TODAY         TO PAI-DATE
+               MOVE WS-CB-COMMERCANT TO PAI-COMMERCANT
+               MOVE WS-INPUT-MONTANT TO PAI-MONTANT
+               MOVE WS-CB-CODE-RES   TO PAI-RESULTAT
+               WRITE PAIEMENT-RECORD
+               CLOSE PAIEMENT-FILE
+           END-IF.
+           MOVE WS-CB-CARTE-NUM TO WS-CB-NUM-BRUT.
+           PERFORM MASQUER-CARTE.
+           MOVE WS-INPUT-MONTANT TO WS-MONTANT-AFF.
+           MOVE "PAIEMENT CB" TO WS-JOURNAL-ACTION.
+           MOVE SPACES TO WS-JOURNAL-DETAIL.
+           STRING FUNCTION TRIM(WS-CB-CODE-RES) DELIMITED BY SIZE
+               " " DELIMITED BY SIZE
+               WS-CB-NUM-MASQUE DELIMITED BY SIZE
+               " Mnt=" DELIMITED BY SIZE
+               FUNCTION TRIM(WS-MONTANT-AFF) DELIMITED BY SIZE
+               " " DELIMITED BY SIZE
+               FUNCTION TRIM(WS-CB-COMMERCANT) DELIMITED BY SIZE
+               INTO WS-JOURNAL-DETAIL
+           END-STRING.
+           PERFORM ECRIRE-JOURNAL.
+           MOVE WS-CB-STATUS TO WS-STATUS.
 
 
        

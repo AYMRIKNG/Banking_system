@@ -24,6 +24,7 @@
                WHEN "Agios"
                WHEN "Commission"
                WHEN "VirInter"
+               WHEN "CB"
                    SET WS-CI-IDX-C TO 1
                    SEARCH WS-TAB-COMPTES
                        AT END

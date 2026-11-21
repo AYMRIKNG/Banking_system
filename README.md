@@ -76,18 +76,25 @@ Le menu conseiller est decoupe en sous-menus (option `6. Deconnexion`).
   - controle fraude standard + alerte supplementaire `LCB-FT` dans `alerte.dat` des 10000.00 EUR (seuil de declaration de soupcon)
 - Historique des virements internationaux (filtre optionnel par compte, total EUR)
 
+**8. Moyens de paiement**
+- Emettre une carte bancaire (compte actif hors `Epargne`, numero 16 chiffres `49730130` + 7 chiffres sequentiels + cle de Luhn via `luhn.cbl`, expiration a 4 ans, CVV deterministe affiche une seule fois et stocke hache avec sel = 4 derniers chiffres, plafond 7 jours glissants par defaut 1500.00, journal `CARTE EMISE`)
+- Paiement par carte (terminal commercant : numero, expiration, CVV, commercant, montant ; controles `C01` a `C07`, opposition automatique apres 3 CVV faux consecutifs, debit + transaction `CB`, enregistrement dans `paiement.dat` des paiements acceptes et refuses, `CONTROLE-FRAUDE` sur paiement accepte, journal `PAIEMENT CB`)
+- Opposition sur une carte (par numero complet ou 4 derniers chiffres + compte, motif Perte / Vol / Fraude, confirmation, journal `OPPOSITION`)
+- Cartes d'un client (liste masquee `4973 01XX XXXX 1234`, compte, expiration, statut, consommation des 7 derniers jours / plafond)
+
 ### Espace client
 Acces restreint au client connecte :
 - **1. Mes comptes** : liste uniquement les comptes du client connecte (avec IBAN)
 - **2. Historique d'un compte** : uniquement pour un compte appartenant au client
 - **3. Effectuer un virement** : uniquement depuis un compte appartenant au client (Depot et Retrait reserves au guichet)
 - **4. Changer mon PIN** : verification de l'ancien PIN puis saisie + confirmation du nouveau PIN
+- **5. Faire opposition sur ma carte** : opposition sur une carte rattachee a un compte appartenant au client connecte
 - **9. Deconnexion**
 
 ## Compiler
 Linux :
 ```
-cobc -x -o Bank Bank.cbl calcul-credit.cbl iban.cbl hachage.cbl scoring.cbl conversion.cbl
+cobc -x -o Bank Bank.cbl calcul-credit.cbl iban.cbl hachage.cbl scoring.cbl conversion.cbl luhn.cbl
 ./Bank
 ```
 
@@ -117,6 +124,20 @@ Le script met `COB_UNIX_LF=Y`, sinon les REWRITE cassent les fichiers .dat sous 
 - `ifu_AAAA.txt` : releve fiscal annuel des interets par client (brut, PFU 30 %, net)
 - `devises.dat` : table des taux de change (code devise, taux pour 1 EUR, date)
 - `virinter.dat` : historique des virements internationaux (cree au premier virement international)
+- `carte.dat` : cartes bancaires emises (numero, compte, expiration, hash CVV, plafond 7j, statut, essais CVV ; ignore par git)
+- `paiement.dat` : historique des paiements et refus CB (numero, date, commercant, montant, resultat `OK` ou `C01`..`C07` ; ignore par git)
+
+## Cartes bancaires (option 8)
+Les numeros de carte suivent le format `49730130` (BIN banque) + 7 chiffres sequentiels + chiffre de controle de Luhn (`luhn.cbl`, modes `G` et `V`). Le numero est affiche masque (`4973 01XX XXXX 1234`) partout hors emission, et le CVV n'est jamais stocke en clair.
+
+Codes de refus lors d'un paiement par carte (`paiement.dat`) :
+- `C01` : numero de carte invalide (controle de Luhn)
+- `C02` : carte inconnue
+- `C03` : carte en opposition
+- `C04` : carte expiree ou date d'expiration incorrecte
+- `C05` : CVV incorrect (3 erreurs consecutives entrainent une opposition automatique)
+- `C06` : plafond de paiement sur 7 jours glissants depasse
+- `C07` : depassement du decouvert autorise (ou compte indisponible)
 
 ## Format des fichiers de lot (option 3.8)
 Fichier texte `LINE SEQUENTIAL` (lignes de 60 caracteres max, colonne 1 = type) :
