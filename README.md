@@ -12,10 +12,17 @@ Banking systeme in COBOL
 8. Interets epargne (taux de la banque applique aux comptes Epargne)
 
 ## Compiler
+Linux :
 ```
 cobc -x -o Bank Bank.cbl
 ./Bank
 ```
+
+Windows (GnuCOBOL installe avec MSYS2 : `pacman -S mingw-w64-ucrt-x86_64-gnucobol mingw-w64-ucrt-x86_64-gcc`) :
+```
+.\bank.ps1
+```
+Le script met `COB_UNIX_LF=Y`, sinon les REWRITE cassent les fichiers .dat sous Windows.
 
 ## Fichiers
 - `banque.dat` : infos de la banque (solde, taux, frais)
