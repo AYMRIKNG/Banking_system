@@ -129,6 +129,14 @@
 
        PROCEDURE DIVISION.
 
+       MAIN-PROGRAM.
+           PERFORM INITIALISER-BANQUE
+           PERFORM UNTIL QUITTER = "O"
+               PERFORM AFFICHER-MENU
+           END-PERFORM
+           DISPLAY "Merci d'avoir utilise le systeme bancaire."
+           STOP RUN.
+
        INITIALISER-BANQUE.
            OPEN I-O BANQUE-FILE
            IF WS-STATUS NOT = "00"
@@ -160,14 +168,6 @@
                CLOSE TRANSACTION-FILE
            END-IF.
            ADD 1 TO WS-MAX-TRANS-NUM GIVING WS-COUNTER.
-
-       MAIN-PROGRAM.
-           PERFORM INITIALISER-BANQUE
-           PERFORM UNTIL QUITTER = "O"
-               PERFORM AFFICHER-MENU
-           END-PERFORM
-           DISPLAY "Merci d'avoir utilise le systeme bancaire."
-           STOP RUN.
 
        AFFICHER-MENU.
            DISPLAY "==== MENU BANCAIRE ====".
