@@ -9,7 +9,8 @@ Banking systeme in COBOL
 5. Historique des transactions
 6. Generer releve mensuel
 7. Accorder credit (mensualite calculee avec le taux de la banque)
-8. Interets epargne (taux de la banque applique aux comptes Epargne)
+8. Interets epargne (taux de la banque applique aux comptes Epargne, une fois par mois)
+9. Rembourser credit (paie une mensualite)
 
 ## Compiler
 Linux :
@@ -29,3 +30,4 @@ Le script met `COB_UNIX_LF=Y`, sinon les REWRITE cassent les fichiers .dat sous 
 - `client.dat` : clients
 - `compte.dat` : comptes
 - `transaction.dat` : transactions
+- `credit.dat` : credits en cours (cree au premier credit)
