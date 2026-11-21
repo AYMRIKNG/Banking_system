@@ -2,12 +2,25 @@
 Banking systeme in COBOL
 
 ## Fonctionnalites
-Le menu principal est decoupe en sous-menus.
+Au demarrage, un ecran de connexion permet de choisir le role :
+- **Conseiller** : acces complet aux sous-menus bancaires (mot de passe
+  defini au premier lancement, 3 essais maximum).
+- **Client** : acces a l'espace client restreint par ID client et code
+  PIN a 4 chiffres (compte bloque apres 3 echecs ; un conseiller peut
+  definir ou debloquer le PIN).
+
+Les mots de passe et PIN ne sont jamais stockes en clair (hachage
+pedagogique dans `hachage.cbl`). La deconnexion renvoie a l'ecran de
+connexion ; on quitte le programme depuis l'ecran de connexion.
+
+### Menu conseiller
+Le menu conseiller est decoupe en sous-menus (option `6. Deconnexion`).
 
 **1. Clients**
 - Ajouter client
 - Modifier client (adresse, telephone)
 - Rechercher client par nom (ou partie du nom)
+- Definir / debloquer PIN client
 
 **2. Comptes**
 - Creer compte (Courant, Epargne, Entreprise)
@@ -43,10 +56,18 @@ Le menu principal est decoupe en sous-menus.
 - Consulter le journal d'audit (`journal.log`, filtre par date)
 - Alertes fraude (consulter et marquer comme traitees)
 
+### Espace client
+Acces restreint au client connecte :
+- **1. Mes comptes** : liste uniquement les comptes du client connecte (avec IBAN)
+- **2. Historique d'un compte** : uniquement pour un compte appartenant au client
+- **3. Effectuer un virement** : uniquement depuis un compte appartenant au client (Depot et Retrait reserves au guichet)
+- **4. Changer mon PIN** : verification de l'ancien PIN puis saisie + confirmation du nouveau PIN
+- **9. Deconnexion**
+
 ## Compiler
 Linux :
 ```
-cobc -x -o Bank Bank.cbl calcul-credit.cbl iban.cbl
+cobc -x -o Bank Bank.cbl calcul-credit.cbl iban.cbl hachage.cbl
 ./Bank
 ```
 
@@ -65,3 +86,5 @@ Le script met `COB_UNIX_LF=Y`, sinon les REWRITE cassent les fichiers .dat sous 
 - `virement.dat` : virements permanents (cree au premier virement)
 - `journal.log` : journal d'audit de toutes les operations
 - `alerte.dat` : alertes de fraude (cree a la premiere alerte)
+- `conseiller.dat` : hash du mot de passe conseiller (cree au premier lancement)
+- `pin.dat` : hash des PIN clients, essais et statut de blocage (cree au premier PIN)

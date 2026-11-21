@@ -2,6 +2,13 @@
            DISPLAY "(Depot, Retrait, Virement) : " WITH NO ADVANCING.
            ACCEPT WS-TRANS-TYPE.
 
+           IF WS-MODE-SESSION = "U"
+              AND (WS-TRANS-TYPE = "Depot"
+                   OR WS-TRANS-TYPE = "Retrait")
+               DISPLAY "Operation reservee au guichet."
+               EXIT PARAGRAPH
+           END-IF.
+
            IF WS-TRANS-TYPE = "Depot" OR WS-TRANS-TYPE = "Retrait"
                DISPLAY "Numero du compte concerne : " WITH NO ADVANCING
                ACCEPT WS-INPUT-COMPTE
@@ -11,6 +18,13 @@
                IF WS-TRANS-TYPE = "Virement"
                 DISPLAY "Numero du compte source : " WITH NO ADVANCING
                 ACCEPT WS-INPUT-COMPTE
+                IF WS-MODE-SESSION = "U"
+                    PERFORM VERIFIER-PROPRIETAIRE
+                    IF WS-PROPRIETAIRE-OK NOT = "O"
+                        DISPLAY "Ce compte ne vous appartient pas."
+                        EXIT PARAGRAPH
+                    END-IF
+                END-IF
                 DISPLAY "Numero du compte desti : " WITH NO ADVANCING
                 ACCEPT WS-INPUT-ID
                 DISPLAY "Montant : " WITH NO ADVANCING

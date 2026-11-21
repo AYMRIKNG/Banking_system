@@ -40,6 +40,12 @@
            SELECT OPTIONAL ALERTE-FILE ASSIGN TO "alerte.dat"
                ORGANIZATION IS LINE SEQUENTIAL
                FILE STATUS IS WS-STATUS.
+           SELECT OPTIONAL CONSEILLER-FILE ASSIGN TO "conseiller.dat"
+               ORGANIZATION IS LINE SEQUENTIAL
+               FILE STATUS IS WS-STATUS.
+           SELECT OPTIONAL PIN-FILE ASSIGN TO "pin.dat"
+               ORGANIZATION IS LINE SEQUENTIAL
+               FILE STATUS IS WS-STATUS.
 
        DATA DIVISION.
        FILE SECTION.
@@ -122,6 +128,17 @@
            05 ALERTE-REGLE         PIC X(15).
            05 ALERTE-MONTANT       PIC 9(9)V99.
            05 ALERTE-STATUT        PIC X.
+
+       FD CONSEILLER-FILE.
+       01 CONSEILLER-RECORD.
+           05 CONS-HASH            PIC 9(10).
+
+       FD PIN-FILE.
+       01 PIN-RECORD.
+           05 PIN-CLIENT-ID        PIC 9(5).
+           05 PIN-HASH             PIC 9(10).
+           05 PIN-ESSAIS           PIC 9.
+           05 PIN-BLOQUE           PIC X.
          
 
        WORKING-STORAGE SECTION.
@@ -299,12 +316,37 @@
            05 WS-INPUT-ALERTE-ID   PIC 9(5).
            05 WS-NB-TRAITEES       PIC 9(5).
 
+       01 WS-HACHAGE.
+           05 WS-H-TEXTE           PIC X(20).
+           05 WS-H-SEL             PIC 9(5).
+           05 WS-H-RESULTAT        PIC 9(10).
+
+       01 WS-AUTH.
+           05 WS-MODE-SESSION      PIC X VALUE SPACE.
+           05 WS-CLIENT-CONNECTE   PIC 9(5) VALUE ZEROS.
+           05 WS-DECONNEXION       PIC X VALUE "N".
+           05 WS-PROPRIETAIRE-OK   PIC X VALUE "N".
+           05 WS-AUTH-STATUS       PIC XX VALUE "00".
+           05 WS-AUTH-OK           PIC X VALUE "N".
+           05 WS-CHOIX-CONN        PIC 9 VALUE 0.
+           05 WS-ESSAI-AUTH        PIC 9 VALUE 0.
+           05 WS-AUTH-CLIENT-ID    PIC 9(5) VALUE ZEROS.
+           05 WS-CONS-HASH-LU      PIC 9(10) VALUE ZEROS.
+           05 WS-PIN-HASH-LU       PIC 9(10) VALUE ZEROS.
+           05 WS-PIN-BLOQUE-LU     PIC X VALUE "N".
+           05 WS-VENANT-BLOQUE     PIC X VALUE "N".
+           05 WS-MDP-SAISIE        PIC X(20).
+           05 WS-MDP-CONFIRM       PIC X(20).
+           05 WS-PIN-ANCIEN        PIC X(20).
+           05 WS-PIN-SAISIE        PIC X(20).
+           05 WS-PIN-CONFIRM       PIC X(20).
+
        PROCEDURE DIVISION.
 
        MAIN-PROGRAM.
            PERFORM INITIALISER-BANQUE
            PERFORM UNTIL QUITTER = "O"
-               PERFORM AFFICHER-MENU
+               PERFORM ECRAN-CONNEXION
            END-PERFORM
            MOVE "ARRET" TO WS-JOURNAL-ACTION
            MOVE "Fin de session" TO WS-JOURNAL-DETAIL
@@ -362,7 +404,7 @@
            DISPLAY "3. Operations".
            DISPLAY "4. Credits".
            DISPLAY "5. Banque".
-           DISPLAY "6. Quitter".
+           DISPLAY "6. Deconnexion".
            DISPLAY "Choisissez une option : " WITH NO ADVANCING.
            ACCEPT CHOIX.
 
@@ -378,7 +420,7 @@
                WHEN 5
                    PERFORM MENU-BANQUE
                WHEN 6
-                   MOVE "O" TO QUITTER
+                   MOVE "O" TO WS-DECONNEXION
                WHEN OTHER
                    DISPLAY "Option invalide."
            END-EVALUATE.
@@ -388,6 +430,7 @@
            DISPLAY "1. Ajouter client".
            DISPLAY "2. Modifier client".
            DISPLAY "3. Rechercher client".
+           DISPLAY "4. Definir / debloquer PIN client".
            DISPLAY "9. Retour".
            DISPLAY "Choisissez une option : " WITH NO ADVANCING.
            ACCEPT SOUS-CHOIX.
@@ -399,6 +442,8 @@
                    PERFORM MODIFIER-CLIENT
                WHEN 3
                    PERFORM RECHERCHER-CLIENT
+               WHEN 4
+                   PERFORM DEFINIR-PIN
                WHEN 9
                    CONTINUE
                WHEN OTHER
@@ -606,6 +651,18 @@
 
        ALERTES-FRAUDE.
            COPY "alertes-fraude.cpy".
+
+       ECRAN-CONNEXION.
+           COPY "connexion.cpy".
+
+       MENU-ESPACE-CLIENT.
+           COPY "espace-client.cpy".
+
+       DEFINIR-PIN.
+           COPY "definir-pin.cpy".
+
+       VERIFIER-PROPRIETAIRE.
+           COPY "verifier-proprietaire.cpy".
 
 
        

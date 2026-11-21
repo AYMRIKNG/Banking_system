@@ -1,6 +1,11 @@
-           DISPLAY "Liste des comptes d'un client.".
-           DISPLAY "ID client : " WITH NO ADVANCING.
-           ACCEPT WS-INPUT-ID.
+           IF WS-MODE-SESSION = "U"
+               DISPLAY "Mes comptes :"
+               MOVE WS-CLIENT-CONNECTE TO WS-INPUT-ID
+           ELSE
+               DISPLAY "Liste des comptes d'un client."
+               DISPLAY "ID client : " WITH NO ADVANCING
+               ACCEPT WS-INPUT-ID
+           END-IF.
 
            OPEN INPUT COMPTE-FILE.
            MOVE "00" TO WS-STATUS.

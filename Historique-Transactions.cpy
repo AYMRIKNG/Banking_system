@@ -2,6 +2,14 @@
            DISPLAY "Numero du compte : " WITH NO ADVANCING.
            ACCEPT WS-INPUT-COMPTE.
 
+           IF WS-MODE-SESSION = "U"
+               PERFORM VERIFIER-PROPRIETAIRE
+               IF WS-PROPRIETAIRE-OK NOT = "O"
+                   DISPLAY "Ce compte ne vous appartient pas."
+                   EXIT PARAGRAPH
+               END-IF
+           END-IF.
+
            MOVE "N" TO WS-FOUND.
            MOVE "00" TO WS-STATUS.
 
