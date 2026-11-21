@@ -77,6 +77,7 @@
            05 CREDIT-MONTANT      PIC 9(9)V99.
            05 CREDIT-RESTANT      PIC 9(9)V99.
            05 CREDIT-MENSUALITE   PIC 9(9)V99.
+           05 CREDIT-DERNIER-MOIS PIC 9(6).
          
 
        WORKING-STORAGE SECTION.
@@ -126,6 +127,12 @@
        01 WS-INTERETS.
            05 WS-INTERET           PIC 9(9)V99.
            05 WS-TOTAL-INTERETS    PIC 9(9)V99.
+
+       01 WS-FIN-MOIS.
+           05 WS-FIN-CREDITS       PIC X.
+           05 WS-TOTAL-PRELEVE     PIC 9(9)V99.
+           05 WS-NB-PRELEVES       PIC 9(5).
+           05 WS-NB-IMPAYES        PIC 9(5).
 
        01 WS-PLAFOND.
            05 WS-PLAFOND-RETRAIT   PIC 9(9)V99 VALUE 1000.00.
@@ -316,6 +323,7 @@
        MENU-BANQUE.
            DISPLAY "---- BANQUE ----".
            DISPLAY "1. Interets epargne".
+           DISPLAY "2. Traitement fin de mois".
            DISPLAY "9. Retour".
            DISPLAY "Choisissez une option : " WITH NO ADVANCING.
            ACCEPT SOUS-CHOIX.
@@ -323,6 +331,8 @@
            EVALUATE SOUS-CHOIX
                WHEN 1
                    PERFORM INTERET-EPARGNE
+               WHEN 2
+                   PERFORM FIN-DE-MOIS
                WHEN 9
                    CONTINUE
                WHEN OTHER
@@ -364,6 +374,12 @@
 
        REMBOURSER-CREDIT.
            COPY "rembourser-credit.cpy".
+
+       FIN-DE-MOIS.
+           COPY "fin-de-mois.cpy".
+
+       PRELEVER-MENSUALITE.
+           COPY "prelever-mensualite.cpy".
 
 
        
