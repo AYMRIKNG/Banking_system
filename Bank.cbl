@@ -127,6 +127,10 @@
            05 WS-INTERET           PIC 9(9)V99.
            05 WS-TOTAL-INTERETS    PIC 9(9)V99.
 
+       01 WS-PLAFOND.
+           05 WS-PLAFOND-RETRAIT   PIC 9(9)V99 VALUE 1000.00.
+           05 WS-TOTAL-JOUR        PIC 9(9)V99.
+
        01 WS-MODIF-CLIENT.
            05 WS-MODIF-ADRESSE     PIC X(50).
            05 WS-MODIF-PHONE       PIC X(15).

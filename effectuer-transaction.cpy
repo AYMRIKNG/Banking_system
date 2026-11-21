@@ -21,6 +21,32 @@
                END-IF
            END-IF.
 
+      *    Plafond de retrait par jour et par compte
+           IF WS-TRANS-TYPE = "Retrait"
+               MOVE ZEROS TO WS-TOTAL-JOUR
+               MOVE "00" TO WS-STATUS
+               OPEN INPUT TRANSACTION-FILE
+               PERFORM UNTIL WS-STATUS = "10"
+                   READ TRANSACTION-FILE
+                       AT END
+                           MOVE "10" TO WS-STATUS
+                       NOT AT END
+                           IF TRANSACTION-COMPTE = WS-INPUT-COMPTE
+                              AND TRANSACTION-TYPE = "Retrait"
+                              AND TRANSACTION-DATE = WS-TODAY
+                               ADD TRANSACTION-MONTANT TO WS-TOTAL-JOUR
+                           END-IF
+                   END-READ
+               END-PERFORM
+               CLOSE TRANSACTION-FILE
+               ADD WS-INPUT-MONTANT TO WS-TOTAL-JOUR
+               IF WS-TOTAL-JOUR > WS-PLAFOND-RETRAIT
+                   DISPLAY "Plafond de retrait journalier depasse."
+                   DISPLAY "Plafond : " WS-PLAFOND-RETRAIT
+                   EXIT PARAGRAPH
+               END-IF
+           END-IF.
+
       *    Verifier le compte destination avant de debiter
            IF WS-TRANS-TYPE = "Virement"
                IF WS-INPUT-ID = WS-INPUT-COMPTE
