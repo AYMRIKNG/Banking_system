@@ -73,6 +73,16 @@
            CLOSE TRANSACTION-FILE.
            ADD 1 TO WS-COUNTER.
 
+      *    Garder le credit pour les remboursements
+           OPEN EXTEND CREDIT-FILE.
+           MOVE WS-INPUT-COMPTE   TO CREDIT-COMPTE.
+           MOVE WS-TODAY          TO CREDIT-DATE.
+           MOVE WS-TOTAL-CREDIT   TO CREDIT-MONTANT.
+           MOVE WS-TOTAL-CREDIT   TO CREDIT-RESTANT.
+           MOVE WS-MENSUALITE     TO CREDIT-MENSUALITE.
+           WRITE CREDIT-RECORD.
+           CLOSE CREDIT-FILE.
+
            DISPLAY "Credit accorde : " WS-INPUT-MONTANT.
            DISPLAY "Total a rembourser : " WS-TOTAL-CREDIT.
            DISPLAY "Mensualite : " WS-MENSUALITE

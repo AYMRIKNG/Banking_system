@@ -24,6 +24,9 @@
            SELECT RELEVE-FILE ASSIGN TO "releve.txt"
                ORGANIZATION IS LINE SEQUENTIAL
                FILE STATUS IS WS-STATUS.
+           SELECT OPTIONAL CREDIT-FILE ASSIGN TO "credit.dat"
+               ORGANIZATION IS LINE SEQUENTIAL
+               FILE STATUS IS WS-STATUS.
 
        DATA DIVISION.
        FILE SECTION.
@@ -66,11 +69,19 @@
            BLOCK CONTAINS 0 RECORDS
            DATA RECORD IS RELEVE-LINE.
        01 RELEVE-LINE     PIC X(100).
+
+       FD CREDIT-FILE.
+       01 CREDIT-RECORD.
+           05 CREDIT-COMPTE       PIC 9(10).
+           05 CREDIT-DATE         PIC 9(8).
+           05 CREDIT-MONTANT      PIC 9(9)V99.
+           05 CREDIT-RESTANT      PIC 9(9)V99.
+           05 CREDIT-MENSUALITE   PIC 9(9)V99.
          
 
        WORKING-STORAGE SECTION.
        77 WS-STATUS           PIC XX VALUE "00".
-       77 CHOIX               PIC 9.
+       77 CHOIX               PIC 99.
        77 QUITTER             PIC X VALUE "N".
        77 WS-TODAY            PIC 9(8).
        77 WS-COMPTE-CHOIX     PIC 9(10).
@@ -182,7 +193,8 @@
            DISPLAY "6. Generer releve"
            DISPLAY "7. Accorder credit".
            DISPLAY "8. Interets epargne".
-           DISPLAY "9. Quitter".
+           DISPLAY "9. Rembourser credit".
+           DISPLAY "10. Quitter".
            DISPLAY "Choisissez une option : " WITH NO ADVANCING.
            ACCEPT CHOIX.
 
@@ -204,6 +216,8 @@
                WHEN 8
                    PERFORM INTERET-EPARGNE
                WHEN 9
+                   PERFORM REMBOURSER-CREDIT
+               WHEN 10
                    MOVE "O" TO QUITTER
                
                WHEN OTHER
@@ -233,6 +247,9 @@
 
        INTERET-EPARGNE.
            COPY "interet-epargne.cpy".
+
+       REMBOURSER-CREDIT.
+           COPY "rembourser-credit.cpy".
 
 
        
