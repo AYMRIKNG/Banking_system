@@ -26,6 +26,7 @@
                WHEN "Commission"
                WHEN "VirInter"
                WHEN "CB"
+               WHEN "Prelev"
                    SET WS-CI-IDX-C TO 1
                    SEARCH WS-TAB-COMPTES
                        AT END

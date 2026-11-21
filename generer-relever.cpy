@@ -97,6 +97,7 @@
                                WHEN TRANSACTION-TYPE = "Commission"
                                WHEN TRANSACTION-TYPE = "VirInter"
                                WHEN TRANSACTION-TYPE = "CB"
+                               WHEN TRANSACTION-TYPE = "Prelev"
                                     MOVE TRANSACTION-DATE(1:6)
                                         TO WS-TRANSACTION-MOIS
                            END-EVALUATE

@@ -79,6 +79,18 @@
            SELECT OPTIONAL PAIEMENT-FILE ASSIGN TO "paiement.dat"
                ORGANIZATION IS LINE SEQUENTIAL
                FILE STATUS IS WS-STATUS.
+           SELECT OPTIONAL MANDAT-FILE ASSIGN TO "mandat.dat"
+               ORGANIZATION IS LINE SEQUENTIAL
+               FILE STATUS IS WS-STATUS.
+           SELECT SDD-IN-FILE ASSIGN TO WS-SDD-NOM
+               ORGANIZATION IS LINE SEQUENTIAL
+               FILE STATUS IS WS-STATUS.
+           SELECT OPTIONAL SDD-HIST-FILE ASSIGN TO "sdd.dat"
+               ORGANIZATION IS LINE SEQUENTIAL
+               FILE STATUS IS WS-STATUS.
+           SELECT REJET-SDD-FILE ASSIGN TO "rejets-sdd.txt"
+               ORGANIZATION IS LINE SEQUENTIAL
+               FILE STATUS IS WS-STATUS.
 
        DATA DIVISION.
        FILE SECTION.
@@ -236,6 +248,30 @@
            05 PAI-COMMERCANT       PIC X(20).
            05 PAI-MONTANT          PIC 9(9)V99.
            05 PAI-RESULTAT         PIC X(3).
+       FD MANDAT-FILE.
+       01 MANDAT-RECORD.
+           05 MANDAT-RUM           PIC X(20).
+           05 MANDAT-ICS           PIC X(13).
+           05 MANDAT-CREANCIER     PIC X(30).
+           05 MANDAT-COMPTE        PIC 9(10).
+           05 MANDAT-MAX           PIC 9(7)V99.
+           05 MANDAT-TYPE          PIC X.
+           05 MANDAT-DATE          PIC 9(8).
+           05 MANDAT-STATUT        PIC X.
+           05 MANDAT-DERNIER       PIC 9(8).
+
+       FD SDD-IN-FILE.
+       01 SDD-IN-RECORD            PIC X(120).
+
+       FD SDD-HIST-FILE.
+       01 SDD-HIST-RECORD.
+           05 SDDH-ICS             PIC X(13).
+           05 SDDH-DATE            PIC 9(8).
+           05 SDDH-NB-OK           PIC 9(5).
+           05 SDDH-NB-REJET        PIC 9(5).
+
+       FD REJET-SDD-FILE.
+       01 REJET-SDD-LINE           PIC X(150).
          
 
        WORKING-STORAGE SECTION.
@@ -791,6 +827,69 @@
            05 WS-LA-AFF-INT        PIC Z(13)9.99.
            05 WS-LA-AFF-TAUX       PIC 9.99.
            05 WS-LA-LIGNE          PIC X(80).
+       01 WS-MANDAT.
+           05 WS-MD-RUM            PIC X(20).
+           05 WS-MD-ICS-SAISIE     PIC X(20).
+           05 WS-MD-ICS            PIC X(13).
+           05 WS-MD-CREANCIER      PIC X(30).
+           05 WS-MD-COMPTE         PIC 9(10).
+           05 WS-MD-MAX            PIC 9(7)V99.
+           05 WS-MD-TYPE           PIC X.
+           05 WS-MD-DATE           PIC 9(8).
+           05 WS-MD-STATUT         PIC X.
+           05 WS-MD-DERNIER        PIC 9(8).
+           05 WS-MD-OK             PIC X.
+           05 WS-MD-IDX            PIC 9(2).
+           05 WS-MD-CAR            PIC X.
+           05 WS-MD-MAX-AFF        PIC Z(6)9.99.
+
+       01 WS-SDD.
+           05 WS-SDD-NOM           PIC X(200).
+           05 WS-SDD-LIGNE         PIC X(120).
+           05 WS-SDD-E REDEFINES WS-SDD-LIGNE.
+               10 WS-SE-TYPE       PIC X.
+               10 WS-SE-ICS        PIC X(13).
+               10 WS-SE-DATE       PIC 9(8).
+               10 WS-SE-NB         PIC 9(5).
+               10 FILLER           PIC X(93).
+           05 WS-SDD-D REDEFINES WS-SDD-LIGNE.
+               10 WS-SD-TYPE       PIC X.
+               10 WS-SD-RUM        PIC X(20).
+               10 WS-SD-IBAN       PIC X(27).
+               10 WS-SD-MONTANT    PIC 9(9)V99.
+               10 WS-SD-LIBELLE    PIC X(30).
+               10 FILLER           PIC X(31).
+           05 WS-SDD-F REDEFINES WS-SDD-LIGNE.
+               10 WS-SF-TYPE       PIC X.
+               10 WS-SF-NB         PIC 9(5).
+               10 WS-SF-TOTAL      PIC 9(11)V99.
+               10 FILLER           PIC X(101).
+           05 WS-SDD-EOF           PIC X.
+           05 WS-SDD-NB-LIGNES     PIC 9(5).
+           05 WS-SDD-NB-E          PIC 9(5).
+           05 WS-SDD-NB-D          PIC 9(5).
+           05 WS-SDD-NB-F          PIC 9(5).
+           05 WS-SDD-DERNIER-TYPE  PIC X.
+           05 WS-SDD-ICS           PIC X(13).
+           05 WS-SDD-DATE          PIC 9(8).
+           05 WS-SDD-NB-ANNONCE    PIC 9(5).
+           05 WS-SDD-F-NB          PIC 9(5).
+           05 WS-SDD-F-TOTAL       PIC 9(11)V99.
+           05 WS-SDD-SOMME-D       PIC 9(11)V99.
+           05 WS-SDD-MOTIF         PIC X(50).
+           05 WS-SDD-NUM-LIGNE     PIC 9(5).
+           05 WS-SDD-NB-OK         PIC 9(5).
+           05 WS-SDD-NB-REJET      PIC 9(5).
+           05 WS-SDD-VERIF-NB      PIC 9(5).
+           05 WS-SDD-MNT-OK        PIC 9(11)V99.
+           05 WS-SDD-MNT-REJET     PIC 9(11)V99.
+           05 WS-SDD-MNT-AFF       PIC Z(10)9.99.
+           05 WS-SDD-CODE-REJET    PIC X(4).
+           05 WS-SDD-LIB-REJET     PIC X(40).
+           05 WS-SDD-SOLDE-CPT     PIC S9(9)V99.
+           05 WS-SDD-TYPE-CPT      PIC A(10).
+           05 WS-SDD-RUM-CUR       PIC X(20).
+           05 WS-SDD-IBAN-CUR      PIC X(27).
 
        PROCEDURE DIVISION.
 
@@ -1071,6 +1170,9 @@
            DISPLAY "2. Paiement par carte".
            DISPLAY "3. Opposition sur une carte".
            DISPLAY "4. Cartes d'un client".
+           DISPLAY "5. Creer un mandat SEPA".
+           DISPLAY "6. Revoquer un mandat".
+           DISPLAY "7. Traiter un fichier de prelevements".
            DISPLAY "9. Retour".
            DISPLAY "Choisissez une option : " WITH NO ADVANCING.
            ACCEPT SOUS-CHOIX.
@@ -1084,6 +1186,12 @@
                    PERFORM OPPOSITION-CARTE
                WHEN 4
                    PERFORM LISTER-CARTES-CLIENT
+               WHEN 5
+                   PERFORM CREER-MANDAT
+               WHEN 6
+                   PERFORM REVOQUER-MANDAT
+               WHEN 7
+                   PERFORM TRAITEMENT-SDD
                WHEN 9
                    CONTINUE
                WHEN OTHER
@@ -1295,6 +1403,14 @@
 
        INTERETS-LIVRETA.
            COPY "interets-livreta.cpy".
+       CREER-MANDAT.
+           COPY "creer-mandat.cpy".
+
+       REVOQUER-MANDAT.
+           COPY "revoquer-mandat.cpy".
+
+       TRAITEMENT-SDD.
+           COPY "traitement-sdd.cpy".
 
 
        

@@ -4,6 +4,7 @@
            DISPLAY "3. Effectuer un virement".
            DISPLAY "4. Changer mon PIN".
            DISPLAY "5. Faire opposition sur ma carte".
+           DISPLAY "6. Revoquer un mandat SEPA".
            DISPLAY "9. Deconnexion".
            DISPLAY "Choisissez une option : " WITH NO ADVANCING.
            ACCEPT SOUS-CHOIX.
@@ -118,6 +119,8 @@
 
                WHEN 5
                    PERFORM OPPOSITION-CARTE
+               WHEN 6
+                   PERFORM REVOQUER-MANDAT
 
                WHEN 9
                    MOVE "O" TO WS-DECONNEXION

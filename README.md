@@ -83,6 +83,9 @@ Le menu conseiller est decoupe en sous-menus (option `6. Deconnexion`).
 - Paiement par carte (terminal commercant : numero, expiration, CVV, commercant, montant ; controles `C01` a `C07`, opposition automatique apres 3 CVV faux consecutifs, debit + transaction `CB`, enregistrement dans `paiement.dat` des paiements acceptes et refuses, `CONTROLE-FRAUDE` sur paiement accepte, journal `PAIEMENT CB`)
 - Opposition sur une carte (par numero complet ou 4 derniers chiffres + compte, motif Perte / Vol / Fraude, confirmation, journal `OPPOSITION`)
 - Cartes d'un client (liste masquee `4973 01XX XXXX 1234`, compte, expiration, statut, consommation des 7 derniers jours / plafond)
+- `5.` Creer un mandat SEPA (`mandat.dat`, controle compte actif, unicite du RUM, format ICS `FR` + 2 chiffres + `ZZZ` + 6 alphanumeriques, montant max optionnel, type `R` recurrent ou `U` ponctuel, journal `MANDAT`)
+- `6.` Revoquer un mandat SEPA (confirmation, passage au statut `R`, journal `REVOCATION`)
+- `7.` Traiter un fichier de prelevements SEPA (SDD : controle de structure en phase 1, anti-doublon dans `sdd.dat`, debits `Prelev` avec regle du decouvert et controle fraude, rejets SEPA dans `rejets-sdd.txt`, journal `SDD TRAITE` / `SDD REFUSE`)
 
 ### Espace client
 Acces restreint au client connecte :
@@ -91,6 +94,7 @@ Acces restreint au client connecte :
 - **3. Effectuer un virement** : uniquement depuis un compte appartenant au client (Depot et Retrait reserves au guichet)
 - **4. Changer mon PIN** : verification de l'ancien PIN puis saisie + confirmation du nouveau PIN
 - **5. Faire opposition sur ma carte** : opposition sur une carte rattachee a un compte appartenant au client connecte
+- **6. Revoquer un mandat SEPA** : revocation d'un mandat portant uniquement sur un compte du client connecte (journal `REVOCATION`)
 - **9. Deconnexion**
 
 ## Compiler
@@ -128,6 +132,10 @@ Le script met `COB_UNIX_LF=Y`, sinon les REWRITE cassent les fichiers .dat sous 
 - `virinter.dat` : historique des virements internationaux (cree au premier virement international)
 - `carte.dat` : cartes bancaires emises (numero, compte, expiration, hash CVV, plafond 7j, statut, essais CVV ; ignore par git)
 - `paiement.dat` : historique des paiements et refus CB (numero, date, commercant, montant, resultat `OK` ou `C01`..`C07` ; ignore par git)
+- `mandat.dat` : mandats de prelevement SEPA (cree au premier mandat)
+- `sdd.dat` : historique des fichiers SDD traites (anti-doublon ICS + date)
+- `rejets-sdd.txt` : lignes rejetees lors du dernier traitement SDD
+- `sdd-exemple.txt` : exemple de fichier de prelevements SEPA pret a l'emploi
 
 ## Cartes bancaires (option 8)
 Les numeros de carte suivent le format `49730130` (BIN banque) + 7 chiffres sequentiels + chiffre de controle de Luhn (`luhn.cbl`, modes `G` et `V`). Le numero est affiche masque (`4973 01XX XXXX 1234`) partout hors emission, et le CVV n'est jamais stocke en clair.
@@ -207,3 +215,39 @@ Le type de compte `LivretA` (option `4 - Livret A` lors de la creation de compte
 - **Menu Comptes -> 7. Interets Livret A (quinzaines)** :
   - `1` : simulation detaillee quinzaine par quinzaine pour un compte et une annee (aucune modification des fichiers).
   - `2` : versement des interets de l'annee pour tous les `LivretA` actifs (transaction `IntLivret` datee `AAAA1231`, credit du compte, debit de `banque.dat`, idempotent par compte et par annee, resume et trace dans `journal.log` sous `INTERETS LIVRET`).
+## Mandats et prelevements SEPA (option 8)
+### Mandats SEPA (`mandat.dat`)
+Un mandat autorise un creancier (identifie par son ICS au format `FR` + 2 chiffres + `ZZZ` + 6 caracteres alphanumeriques) a prelever un compte non cloture :
+- **RUM** (`X(20)`) : Reference Unique de Mandat (unique dans `mandat.dat`)
+- **ICS** (`X(13)`) : Identifiant Creancier SEPA
+- **Creancier** (`X(30)`), **Compte** (`9(10)`), **Montant max** (`9(7)V99`, `0` = sans limite)
+- **Type** : `R` (recurrent) ou `U` (ponctuel, passe au statut `C` apres son unique prelevement)
+- **Statut** : `A` (actif), `R` (revoque), `C` (consomme)
+
+Pour tester `sdd-exemple.txt`, creer le mandat suivant via `8. Moyens de paiement -> 5. Creer un mandat SEPA` :
+- Numero de compte : `0000000001` (IBAN `FR7630001000010000000000112`)
+- RUM : `RUM-EDF-001`
+- ICS : `FR12ZZZ123456`
+- Nom du creancier : `EDF`
+- Montant maximum : `100.00`
+- Type : `R`
+
+Puis lancer `8. Moyens de paiement -> 7. Traiter un fichier de prelevements` avec `sdd-exemple.txt` (1 ligne acceptee de 45.50, 1 rejet `AM05` doublon, 1 rejet `MD01` RUM inconnu).
+
+### Format des fichiers de prelevements SEPA (`SDD`)
+Fichier texte `LINE SEQUENTIAL` (lignes de 120 caracteres max, colonne 1 = type) :
+- **En-tete `E`** (1ere ligne, unique) : `E` + ICS `X(13)` + date d'echeance `9(8)` (AAAAMMJJ) + nombre de lignes detail `9(5)`
+- **Detail `D`** : `D` + RUM `X(20)` + IBAN debiteur `X(27)` + montant `9(9)V99` (11 chiffres sans point) + libelle `X(30)`
+- **Fin `F`** (derniere ligne, unique) : `F` + nombre de lignes detail `9(5)` + total des montants `9(11)V99` (13 chiffres sans point)
+
+Phase 1 controle la structure (`E` en premier, `F` en dernier, compteurs, somme des montants = total `F`) et l'absence de doublon `(ICS, date)` dans `sdd.dat` ; en cas d'echec, rien n'est applique (`SDD REFUSE`).
+En phase 2, chaque ligne acceptee debite le compte, enregistre une transaction `Prelev` (dest = `0`), met a jour `MANDAT-DERNIER` (et statut `C` si ponctuel) et declenche `CONTROLE-FRAUDE`.
+
+### Codes de rejet SEPA (`rejets-sdd.txt`)
+- `MD01` : pas de mandat (RUM inconnu ou ICS different de l'en-tete)
+- `MS02` : mandat revoque (`R`) ou ponctuel deja consomme (`C`)
+- `AC01` : IBAN incorrect (controle modulo 97 via `CALCUL-IBAN` mode `V`, ou IBAN ne correspondant pas au compte du mandat)
+- `AC04` : compte cloture
+- `AM04` : provision insuffisante (regle du decouvert autorise, `0` sur `Epargne`)
+- `AM05` : doublon (meme RUM deja preleve a la meme date d'echeance)
+- `MD07` : montant superieur au maximum du mandat

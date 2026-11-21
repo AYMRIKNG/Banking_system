@@ -1,3 +1,4 @@
 *.dat text eol=lf
 releve*.txt text eol=lf
 lot*.txt text eol=lf
+sdd*.txt text eol=lf
