@@ -21,6 +21,8 @@ Le menu principal est decoupe en sous-menus.
 - Historique des transactions
 - Generer releve mensuel
 - Export CSV des transactions (`transactions.csv`)
+- Virements permanents : creation et arret (executes en fin de mois)
+- Annuler une transaction (Depot, Retrait, Virement : contre-passation)
 
 **4. Credits**
 - Accorder credit (mensualite calculee avec le taux de la banque)
@@ -28,8 +30,14 @@ Le menu principal est decoupe en sous-menus.
 
 **5. Banque**
 - Interets epargne (taux de la banque, une fois par mois)
-- Traitement fin de mois : interets + prelevement automatique des mensualites
+- Traitement fin de mois, une seule fois par mois :
+  1. interets epargne
+  2. prelevement automatique des mensualites de credit
+  3. virements permanents
+  4. frais de tenue de compte (2.00 Courant, 5.00 Entreprise)
 - Statistiques (comptes par type, total des soldes, credits en cours...)
+- Classement des clients par avoirs (verbe SORT)
+- Consulter le journal d'audit (`journal.log`, filtre par date)
 
 ## Compiler
 Linux :
@@ -50,3 +58,5 @@ Le script met `COB_UNIX_LF=Y`, sinon les REWRITE cassent les fichiers .dat sous 
 - `compte.dat` : comptes
 - `transaction.dat` : transactions
 - `credit.dat` : credits en cours (cree au premier credit)
+- `virement.dat` : virements permanents (cree au premier virement)
+- `journal.log` : journal d'audit de toutes les operations
