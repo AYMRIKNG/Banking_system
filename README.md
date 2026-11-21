@@ -2,15 +2,34 @@
 Banking systeme in COBOL
 
 ## Fonctionnalites
-1. Ajouter client
-2. Creer compte (Courant, Epargne, Entreprise)
-3. Effectuer transaction (Depot, Retrait, Virement)
-4. Lister comptes client
-5. Historique des transactions
-6. Generer releve mensuel
-7. Accorder credit (mensualite calculee avec le taux de la banque)
-8. Interets epargne (taux de la banque applique aux comptes Epargne, une fois par mois)
-9. Rembourser credit (paie une mensualite)
+Le menu principal est decoupe en sous-menus.
+
+**1. Clients**
+- Ajouter client
+- Modifier client (adresse, telephone)
+- Rechercher client par nom (ou partie du nom)
+
+**2. Comptes**
+- Creer compte (Courant, Epargne, Entreprise)
+- Lister comptes client
+- Cloturer compte (solde rendu, refuse si un credit est en cours)
+
+**3. Operations**
+- Effectuer transaction (Depot, Retrait, Virement)
+  - plafond de retrait de 1000.00 par jour et par compte
+  - aucune operation possible sur un compte cloture
+- Historique des transactions
+- Generer releve mensuel
+- Export CSV des transactions (`transactions.csv`)
+
+**4. Credits**
+- Accorder credit (mensualite calculee avec le taux de la banque)
+- Rembourser credit (paie une mensualite)
+
+**5. Banque**
+- Interets epargne (taux de la banque, une fois par mois)
+- Traitement fin de mois : interets + prelevement automatique des mensualites
+- Statistiques (comptes par type, total des soldes, credits en cours...)
 
 ## Compiler
 Linux :
