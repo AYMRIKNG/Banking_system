@@ -49,6 +49,15 @@
            SELECT CONTROLE-FILE ASSIGN TO "controle.txt"
                ORGANIZATION IS LINE SEQUENTIAL
                FILE STATUS IS WS-STATUS.
+           SELECT LOT-FILE ASSIGN TO WS-LOT-NOM
+               ORGANIZATION IS LINE SEQUENTIAL
+               FILE STATUS IS WS-STATUS.
+           SELECT OPTIONAL LOTS-FILE ASSIGN TO "lots.dat"
+               ORGANIZATION IS LINE SEQUENTIAL
+               FILE STATUS IS WS-STATUS.
+           SELECT REJET-FILE ASSIGN TO "rejets.txt"
+               ORGANIZATION IS LINE SEQUENTIAL
+               FILE STATUS IS WS-STATUS.
 
        DATA DIVISION.
        FILE SECTION.
@@ -145,6 +154,19 @@
 
        FD CONTROLE-FILE.
        01 CONTROLE-LINE            PIC X(100).
+
+       FD LOT-FILE.
+       01 LOT-RECORD               PIC X(60).
+
+       FD LOTS-FILE.
+       01 LOTS-RECORD.
+           05 LOTS-NUM             PIC 9(5).
+           05 LOTS-DATE            PIC 9(8).
+           05 LOTS-NB-OK           PIC 9(5).
+           05 LOTS-NB-REJET        PIC 9(5).
+
+       FD REJET-FILE.
+       01 REJET-LINE               PIC X(130).
          
 
        WORKING-STORAGE SECTION.
@@ -383,6 +405,53 @@
            05 WS-CI-DATE-FMT       PIC X(10).
            05 WS-CI-LIGNE          PIC X(100).
 
+       01 WS-LOT.
+           05 WS-LOT-NOM           PIC X(200).
+           05 WS-LOT-LIGNE         PIC X(60).
+           05 WS-LOT-E REDEFINES WS-LOT-LIGNE.
+               10 WS-LE-TYPE       PIC X.
+               10 WS-LE-NUM        PIC 9(5).
+               10 WS-LE-DATE       PIC 9(8).
+               10 WS-LE-NB         PIC 9(5).
+               10 FILLER           PIC X(41).
+           05 WS-LOT-D REDEFINES WS-LOT-LIGNE.
+               10 WS-LD-TYPE       PIC X.
+               10 WS-LD-COMPTE     PIC 9(10).
+               10 WS-LD-OP         PIC A(10).
+               10 WS-LD-MONTANT    PIC 9(9)V99.
+               10 WS-LD-DEST       PIC 9(10).
+               10 FILLER           PIC X(18).
+           05 WS-LOT-F REDEFINES WS-LOT-LIGNE.
+               10 WS-LF-TYPE       PIC X.
+               10 WS-LF-NB         PIC 9(5).
+               10 WS-LF-TOTAL      PIC 9(11)V99.
+               10 FILLER           PIC X(41).
+           05 WS-LOT-EOF           PIC X.
+           05 WS-LOT-NB-LIGNES     PIC 9(5).
+           05 WS-LOT-NB-E          PIC 9(5).
+           05 WS-LOT-NB-D          PIC 9(5).
+           05 WS-LOT-NB-F          PIC 9(5).
+           05 WS-LOT-DERNIER-TYPE  PIC X.
+           05 WS-LOT-NUM           PIC 9(5).
+           05 WS-LOT-DATE          PIC 9(8).
+           05 WS-LOT-NB-ANNONCE    PIC 9(5).
+           05 WS-LOT-F-NB          PIC 9(5).
+           05 WS-LOT-F-TOTAL       PIC 9(11)V99.
+           05 WS-LOT-SOMME-D       PIC 9(11)V99.
+           05 WS-LOT-MOTIF         PIC X(50).
+           05 WS-LOT-NUM-LIGNE     PIC 9(5).
+           05 WS-LOT-NB-OK         PIC 9(5).
+           05 WS-LOT-NB-REJET      PIC 9(5).
+           05 WS-LOT-VERIF-NB      PIC 9(5).
+           05 WS-LOT-MNT-OK        PIC 9(11)V99.
+           05 WS-LOT-MNT-REJET     PIC 9(11)V99.
+           05 WS-LOT-MNT-AFF       PIC Z(10)9.99.
+           05 WS-LOT-CODE-REJET    PIC X(3).
+           05 WS-LOT-LIB-REJET     PIC X(40).
+           05 WS-LOT-SOLDE-SRC     PIC 9(9)V99.
+           05 WS-LOT-TYPE-SRC      PIC A(10).
+           05 WS-LOT-TYPE-DEST     PIC A(10).
+
        PROCEDURE DIVISION.
 
        MAIN-PROGRAM.
@@ -526,6 +595,7 @@
            DISPLAY "5. Creer virement permanent".
            DISPLAY "6. Arreter virement permanent".
            DISPLAY "7. Annuler transaction".
+           DISPLAY "8. Traitement par lot".
            DISPLAY "9. Retour".
            DISPLAY "Choisissez une option : " WITH NO ADVANCING.
            ACCEPT SOUS-CHOIX.
@@ -545,6 +615,8 @@
                    PERFORM ARRETER-VIREMENT
                WHEN 7
                    PERFORM ANNULER-TRANSACTION
+               WHEN 8
+                   PERFORM TRAITEMENT-LOT
                WHEN 9
                    CONTINUE
                WHEN OTHER
@@ -711,6 +783,9 @@
 
        CONTROLE-INTEGRITE.
            COPY "controle-integrite.cpy".
+
+       TRAITEMENT-LOT.
+           COPY "traitement-lot.cpy".
 
 
        
