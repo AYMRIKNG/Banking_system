@@ -33,6 +33,7 @@
            SELECT OPTIONAL VIREMENT-FILE ASSIGN TO "virement.dat"
                ORGANIZATION IS LINE SEQUENTIAL
                FILE STATUS IS WS-STATUS.
+           SELECT TRI-FILE ASSIGN TO "tri.tmp".
 
        DATA DIVISION.
        FILE SECTION.
@@ -96,6 +97,13 @@
            05 VP-MONTANT           PIC 9(9)V99.
            05 VP-ACTIF             PIC X.
            05 VP-DERNIER-MOIS      PIC 9(6).
+
+       SD TRI-FILE.
+       01 TRI-RECORD.
+           05 TRI-TOTAL            PIC 9(9)V99.
+           05 TRI-CLIENT-ID        PIC 9(5).
+           05 TRI-NAME             PIC A(30).
+           05 TRI-NB-COMPTES       PIC 9(3).
          
 
        WORKING-STORAGE SECTION.
@@ -218,6 +226,15 @@
            05 WS-ANN-TYPE          PIC A(10).
            05 WS-ANN-MONTANT       PIC 9(9)V99.
            05 WS-ANN-DEST          PIC 9(10).
+
+       01 WS-CLASSEMENT.
+           05 WS-FIN-CLIENTS       PIC X.
+           05 WS-FIN-TRI           PIC X.
+           05 WS-CL-TOTAL          PIC 9(9)V99.
+           05 WS-CL-NB-COMPTES     PIC 9(3).
+           05 WS-CL-RANG           PIC 9(5).
+           05 WS-CL-RANG-AFF       PIC Z(4)9.
+           05 WS-CL-TOTAL-GENERAL  PIC 9(9)V99.
 
        
 
@@ -396,6 +413,7 @@
            DISPLAY "1. Interets epargne".
            DISPLAY "2. Traitement fin de mois".
            DISPLAY "3. Statistiques".
+           DISPLAY "4. Classement clients".
            DISPLAY "9. Retour".
            DISPLAY "Choisissez une option : " WITH NO ADVANCING.
            ACCEPT SOUS-CHOIX.
@@ -407,6 +425,8 @@
                    PERFORM FIN-DE-MOIS
                WHEN 3
                    PERFORM STATISTIQUES
+               WHEN 4
+                   PERFORM CLASSEMENT-CLIENTS
                WHEN 9
                    CONTINUE
                WHEN OTHER
@@ -475,6 +495,15 @@
 
        ANNULER-TRANSACTION.
            COPY "annuler-transaction.cpy".
+
+       CLASSEMENT-CLIENTS.
+           COPY "classement-clients.cpy".
+
+       CLASSEMENT-ENTREE.
+           COPY "classement-entree.cpy".
+
+       CLASSEMENT-SORTIE.
+           COPY "classement-sortie.cpy".
 
 
        
