@@ -113,6 +113,9 @@
            05 WS-MAX-CLIENT-NUM    PIC 9(10) VALUE ZEROS.
            05 WS-NOUVELLE-ID       PIC 9(10).
 
+       01 WS-GENERATION-TRANSACTION.
+           05 WS-MAX-TRANS-NUM     PIC 9(10) VALUE ZEROS.
+
        
 
        PROCEDURE DIVISION.
@@ -130,6 +133,24 @@
             DISPLAY "Name :" BANQUE-NAME ",Solde :" BANQUE-SOLDE
 
            CLOSE BANQUE-FILE.
+
+      *    Reprendre le compteur de transaction apres le dernier ID
+           MOVE ZEROS TO WS-MAX-TRANS-NUM.
+           OPEN INPUT TRANSACTION-FILE.
+           IF WS-STATUS = "00"
+               PERFORM UNTIL WS-STATUS = "10"
+                   READ TRANSACTION-FILE
+                       AT END
+                           MOVE "10" TO WS-STATUS
+                       NOT AT END
+                           IF TRANSACTION-ID > WS-MAX-TRANS-NUM
+                               MOVE TRANSACTION-ID TO WS-MAX-TRANS-NUM
+                           END-IF
+                   END-READ
+               END-PERFORM
+               CLOSE TRANSACTION-FILE
+           END-IF.
+           ADD 1 TO WS-MAX-TRANS-NUM GIVING WS-COUNTER.
 
        MAIN-PROGRAM.
            PERFORM INITIALISER-BANQUE
