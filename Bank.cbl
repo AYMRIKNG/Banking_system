@@ -110,6 +110,10 @@
            05 WS-TOTAL-CREDIT      PIC 9(9)V99.
            05 WS-MENSUALITE        PIC 9(9)V99.
 
+       01 WS-INTERETS.
+           05 WS-INTERET           PIC 9(9)V99.
+           05 WS-TOTAL-INTERETS    PIC 9(9)V99.
+
        01 WS-GENERATION-COMPTE.
            05 WS-MAX-COMPTE-NUM    PIC 9(10) VALUE ZEROS.
            05 WS-NOUVEAU-NUM       PIC 9(10).
@@ -174,7 +178,8 @@
            DISPLAY "5. Historique des transactions".
            DISPLAY "6. Generer releve"
            DISPLAY "7. Accorder credit".
-           DISPLAY "8. Quitter".
+           DISPLAY "8. Interets epargne".
+           DISPLAY "9. Quitter".
            DISPLAY "Choisissez une option : " WITH NO ADVANCING.
            ACCEPT CHOIX.
 
@@ -194,6 +199,8 @@
                WHEN 7
                    PERFORM ACCORDER-CREDIT
                WHEN 8
+                   PERFORM INTERET-EPARGNE
+               WHEN 9
                    MOVE "O" TO QUITTER
                
                WHEN OTHER
@@ -222,6 +229,7 @@
            COPY "accorder-credit.cpy".
 
        INTERET-EPARGNE.
+           COPY "interet-epargne.cpy".
 
 
        

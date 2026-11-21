@@ -48,6 +48,9 @@
                                WHEN TRANSACTION-TYPE = "Credit"
                                     MOVE TRANSACTION-DATE(1:6)
                                         TO WS-TRANSACTION-MOIS
+                               WHEN TRANSACTION-TYPE = "Interet"
+                                    MOVE TRANSACTION-DATE(1:6)
+                                        TO WS-TRANSACTION-MOIS
                            END-EVALUATE
 
                            IF WS-TRANSACTION-MOIS = WS-MOIS
