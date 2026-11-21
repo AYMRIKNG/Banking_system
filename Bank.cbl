@@ -163,6 +163,14 @@
            05 WS-VP-MONTANT        PIC 9(9)V99.
            05 WS-VP-NB-ACTIFS      PIC 9(5).
 
+       01 WS-FRAIS-TENUE.
+           05 WS-FRAIS-COURANT     PIC 9(3)V99 VALUE 2.00.
+           05 WS-FRAIS-ENTREPRISE  PIC 9(3)V99 VALUE 5.00.
+           05 WS-FRAIS             PIC 9(3)V99.
+           05 WS-TOTAL-FRAIS       PIC 9(9)V99.
+           05 WS-NB-FRAIS          PIC 9(5).
+           05 WS-NB-FRAIS-ECHEC    PIC 9(5).
+
        01 WS-STATS.
            05 WS-NB-COURANT        PIC 9(5).
            05 WS-NB-EPARGNE        PIC 9(5).
@@ -450,6 +458,9 @@
 
        EXECUTER-VIREMENT.
            COPY "executer-virement.cpy".
+
+       FRAIS-TENUE-COMPTE.
+           COPY "frais-tenue.cpy".
 
 
        

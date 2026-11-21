@@ -73,3 +73,6 @@
 
            DISPLAY "Virements effectues : " WS-NB-VIREMENTS-OK.
            DISPLAY "Virements en echec : " WS-NB-VIREMENTS-ECHEC.
+
+      *    4. Frais de tenue de compte
+           PERFORM FRAIS-TENUE-COMPTE.
