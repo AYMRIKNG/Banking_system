@@ -223,6 +223,38 @@
            05 WS-CC-TOTAL          PIC 9(9)V99.
            05 WS-CC-RETOUR         PIC 9.
 
+       01 WS-SCORING.
+           05 WS-SC-REVENUS        PIC 9(9)V99.
+           05 WS-SC-CHARGES        PIC 9(9)V99.
+           05 WS-SC-MENSUALITE     PIC 9(9)V99.
+           05 WS-SC-ANCIENNETE     PIC 9(3).
+           05 WS-SC-NB-ALERTES     PIC 9(3).
+           05 WS-SC-EPARGNE        PIC 9(9)V99.
+           05 WS-SC-MONTANT        PIC 9(9)V99.
+           05 WS-SC-ENDETTEMENT    PIC 9(3)V99.
+           05 WS-SC-SCORE          PIC 9(3).
+           05 WS-SC-DECISION       PIC X.
+           05 WS-SC-MOTIF          PIC X(40).
+
+       01 WS-SCORING-WORK.
+           05 WS-SCW-STATUS        PIC XX.
+           05 WS-SCW-CLIENT-ID     PIC 9(5).
+           05 WS-SCW-NB-COMPTES    PIC 9(2).
+           05 WS-SCW-TAB-COMPTES OCCURS 50 TIMES
+               INDEXED BY WS-SCW-IDX.
+               10 WS-SCW-CPT       PIC 9(10).
+           05 WS-SCW-TOTAL-REV     PIC 9(11)V99.
+           05 WS-SCW-JOUR-AUJ      PIC 9(8).
+           05 WS-SCW-JOUR-LIM      PIC 9(8).
+           05 WS-SCW-JOUR-TR       PIC 9(8).
+           05 WS-SCW-JOUR-MIN      PIC 9(8).
+           05 WS-SCW-DIFF-JOURS    PIC 9(8).
+           05 WS-SCW-ANC-CALC      PIC 9(5).
+           05 WS-SCW-TR-DEST       PIC 9(10).
+           05 WS-SCW-SRC-CLIENT    PIC X.
+           05 WS-SCW-DEST-CLIENT   PIC X.
+           05 WS-SCW-TAUX-AFF      PIC Z(2)9.99.
+
        01 WS-CALCUL-IBAN.
            05 WS-IBAN-MODE         PIC X.
            05 WS-IBAN-COMPTE       PIC 9(10).
@@ -711,6 +743,9 @@
        
        ACCORDER-CREDIT.
            COPY "accorder-credit.cpy".
+
+       CALCULER-SCORE.
+           COPY "calcul-score.cpy".
 
        INTERET-EPARGNE.
            COPY "interet-epargne.cpy".

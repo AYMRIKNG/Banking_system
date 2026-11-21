@@ -41,7 +41,7 @@ Le menu conseiller est decoupe en sous-menus (option `6. Deconnexion`).
 - Traitement par lot (batch de mouvements avec controle en-tete/fin et rejets dans `rejets.txt`)
 
 **4. Credits**
-- Accorder credit (mensualite calculee par annuites constantes)
+- Accorder credit (mensualite calculee par annuites constantes, scoring client prealable via `scoring.cbl`)
 - Rembourser credit (paie une mensualite)
 - Simuler credit (tableau d'amortissement dans `amortissement.txt`)
 
@@ -69,7 +69,7 @@ Acces restreint au client connecte :
 ## Compiler
 Linux :
 ```
-cobc -x -o Bank Bank.cbl calcul-credit.cbl iban.cbl hachage.cbl
+cobc -x -o Bank Bank.cbl calcul-credit.cbl iban.cbl hachage.cbl scoring.cbl
 ./Bank
 ```
 
@@ -109,3 +109,22 @@ Codes de rejet (`rejets.txt`) :
 - `R05` : solde insuffisant
 - `R06` : compte destination inconnu ou cloture
 - `R07` : compte destination egal au compte source
+
+## Scoring credit (option 4.1)
+Avant tout octroi de credit, le programme calcule la mensualite puis evalue le dossier client (`CALCULER-SCORE` + sous-programme `SCORING-CREDIT` dans `scoring.cbl`) avant toute modification des fichiers :
+- **Revenus mensuels** : `(Depots + Virements recus depuis un compte tiers sur les 90 derniers jours) / 3`
+- **Charges mensuelles** : somme des mensualites des credits en cours (`CREDIT-RESTANT > 0`) du client
+- **Taux d'endettement** : `(charges + nouvelle mensualite) / revenus * 100`
+- **Anciennete** : nombre de mois depuis la plus ancienne transaction sur les comptes du client
+- **Alertes ouvertes** : nombre d'alertes fraude non traitees (`N`) sur les comptes du client
+- **Epargne** : somme des soldes des comptes `Epargne` du client
+
+Regles de decision :
+- Revenus = 0 : **R** (`Aucun revenu regulier`)
+- Endettement > 35 % : **R** direct (`Endettement superieur a 35 pour cent`)
+- Score initial = 100 (borne entre 0 et 100) :
+  - endettement > 30 % : `-25` ; > 20 % : `-10`
+  - anciennete < 3 mois : `-20` ; < 12 mois : `-10`
+  - chaque alerte fraude ouverte : `-15` (plafond `-45`)
+  - epargne >= 10 % du montant demande : `+10`
+- Seuils : **A** (>= 70, octroi automatique), **E** (50 a 69, confirmation conseiller `O/N`), **R** (< 50, refus sans modification). Chaque scoring est trace dans `journal.log` (`SCORING`).
