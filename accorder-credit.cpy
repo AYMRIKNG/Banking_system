@@ -48,6 +48,13 @@
                EXIT PARAGRAPH
            END-IF.
 
+           IF COMPTE-TYPE = "Cloture"
+               DISPLAY "Compte cloture : credit impossible."
+               CLOSE COMPTE-FILE
+               CLOSE BANQUE-FILE
+               EXIT PARAGRAPH
+           END-IF.
+
            ADD WS-INPUT-MONTANT TO COMPTE-SOLDE.
            REWRITE COMPTE-RECORD.
            CLOSE COMPTE-FILE.

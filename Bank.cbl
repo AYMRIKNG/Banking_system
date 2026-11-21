@@ -83,6 +83,7 @@
        77 WS-STATUS           PIC XX VALUE "00".
        77 CHOIX               PIC 9.
        77 SOUS-CHOIX          PIC 9.
+       77 WS-CONFIRMATION     PIC X.
        77 QUITTER             PIC X VALUE "N".
        77 WS-TODAY            PIC 9(8).
        77 WS-COMPTE-CHOIX     PIC 9(10).
@@ -249,6 +250,7 @@
            DISPLAY "---- COMPTES ----".
            DISPLAY "1. Creer compte".
            DISPLAY "2. Lister comptes client".
+           DISPLAY "3. Cloturer compte".
            DISPLAY "9. Retour".
            DISPLAY "Choisissez une option : " WITH NO ADVANCING.
            ACCEPT SOUS-CHOIX.
@@ -258,6 +260,8 @@
                    PERFORM CREER-COMPTE
                WHEN 2
                    PERFORM LISTER-COMPTES-CLIENT
+               WHEN 3
+                   PERFORM CLOTURER-COMPTE
                WHEN 9
                    CONTINUE
                WHEN OTHER
@@ -332,6 +336,9 @@
 
        CREER-COMPTE.
            COPY "creer-compte.cpy".
+
+       CLOTURER-COMPTE.
+           COPY "cloturer-compte.cpy".
 
         EFFECTUER-TRANSACTION.
            COPY "effectuer-transaction.cpy".

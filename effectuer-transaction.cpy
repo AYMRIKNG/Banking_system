@@ -45,6 +45,10 @@
                    DISPLAY "Compte destination non trouve."
                    EXIT PARAGRAPH
                END-IF
+               IF COMPTE-TYPE = "Cloture"
+                   DISPLAY "Compte destination cloture."
+                   EXIT PARAGRAPH
+               END-IF
            END-IF.
 
            MOVE "N" TO WS-FOUND.
@@ -64,6 +68,12 @@
 
            IF WS-FOUND = "N"
                DISPLAY "Compte source non trouve."
+               CLOSE COMPTE-FILE
+               EXIT PARAGRAPH
+           END-IF.
+
+           IF COMPTE-TYPE = "Cloture"
+               DISPLAY "Compte cloture : operation impossible."
                CLOSE COMPTE-FILE
                EXIT PARAGRAPH
            END-IF.
