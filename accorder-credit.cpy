@@ -64,9 +64,21 @@
            CLOSE BANQUE-FILE.
 
       *    Calcul de la mensualite avec le taux de la banque
-           COMPUTE WS-TOTAL-CREDIT ROUNDED =
-               WS-INPUT-MONTANT * (1 + BANQUE-INTERETS / 100).
-           COMPUTE WS-MENSUALITE ROUNDED = WS-TOTAL-CREDIT / WS-DUREE.
+           MOVE "M"                TO WS-CC-MODE.
+           MOVE WS-INPUT-MONTANT   TO WS-CC-CAPITAL.
+           MOVE BANQUE-INTERETS    TO WS-CC-TAUX-ANNUEL.
+           MOVE WS-DUREE           TO WS-CC-DUREE.
+           MOVE ZEROS              TO WS-CC-MENSUALITE
+                                      WS-CC-COUT-TOTAL
+                                      WS-CC-TOTAL
+                                      WS-CC-RETOUR.
+           CALL "CALCUL-CREDIT" USING WS-CALCUL-CREDIT.
+           IF WS-CC-RETOUR NOT = 0
+               DISPLAY "Parametres de credit invalides."
+               EXIT PARAGRAPH
+           END-IF.
+           MOVE WS-CC-TOTAL        TO WS-TOTAL-CREDIT.
+           MOVE WS-CC-MENSUALITE   TO WS-MENSUALITE.
 
            OPEN EXTEND TRANSACTION-FILE.
            MOVE WS-COUNTER        TO WS-TRANS-ID.

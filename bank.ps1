@@ -7,5 +7,7 @@ $env:COB_COPY_DIR = "$msys\share\gnucobol\copy"
 $env:COB_UNIX_LF = "Y"
 
 Set-Location $PSScriptRoot
-cobc -x -o Bank Bank.cbl
+# Bank.cbl en premier (programme principal), puis les sous-programmes
+$sous = @(Get-ChildItem *.cbl | Where-Object { $_.Name -ne "Bank.cbl" } | ForEach-Object { $_.Name })
+cobc -x -o Bank Bank.cbl $sous
 if ($LASTEXITCODE -eq 0) { .\Bank.exe }

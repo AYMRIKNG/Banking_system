@@ -25,8 +25,9 @@ Le menu principal est decoupe en sous-menus.
 - Annuler une transaction (Depot, Retrait, Virement : contre-passation)
 
 **4. Credits**
-- Accorder credit (mensualite calculee avec le taux de la banque)
+- Accorder credit (mensualite calculee par annuites constantes)
 - Rembourser credit (paie une mensualite)
+- Simuler credit (tableau d'amortissement dans `amortissement.txt`)
 
 **5. Banque**
 - Interets epargne (taux de la banque, une fois par mois)
@@ -42,7 +43,7 @@ Le menu principal est decoupe en sous-menus.
 ## Compiler
 Linux :
 ```
-cobc -x -o Bank Bank.cbl
+cobc -x -o Bank Bank.cbl calcul-credit.cbl
 ./Bank
 ```
 

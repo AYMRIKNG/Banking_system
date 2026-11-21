@@ -156,6 +156,16 @@
            05 WS-TOTAL-CREDIT      PIC 9(9)V99.
            05 WS-MENSUALITE        PIC 9(9)V99.
 
+       01 WS-CALCUL-CREDIT.
+           05 WS-CC-MODE           PIC X.
+           05 WS-CC-CAPITAL        PIC 9(9)V99.
+           05 WS-CC-TAUX-ANNUEL    PIC 9(2)V99.
+           05 WS-CC-DUREE          PIC 9(3).
+           05 WS-CC-MENSUALITE     PIC 9(9)V99.
+           05 WS-CC-COUT-TOTAL     PIC 9(9)V99.
+           05 WS-CC-TOTAL          PIC 9(9)V99.
+           05 WS-CC-RETOUR         PIC 9.
+
        01 WS-INTERETS.
            05 WS-INTERET           PIC 9(9)V99.
            05 WS-TOTAL-INTERETS    PIC 9(9)V99.
@@ -417,6 +427,7 @@
            DISPLAY "---- CREDITS ----".
            DISPLAY "1. Accorder credit".
            DISPLAY "2. Rembourser credit".
+           DISPLAY "3. Simuler credit".
            DISPLAY "9. Retour".
            DISPLAY "Choisissez une option : " WITH NO ADVANCING.
            ACCEPT SOUS-CHOIX.
@@ -426,6 +437,8 @@
                    PERFORM ACCORDER-CREDIT
                WHEN 2
                    PERFORM REMBOURSER-CREDIT
+               WHEN 3
+                   PERFORM SIMULER-CREDIT
                WHEN 9
                    CONTINUE
                WHEN OTHER
@@ -495,6 +508,9 @@
 
        REMBOURSER-CREDIT.
            COPY "rembourser-credit.cpy".
+
+       SIMULER-CREDIT.
+           COPY "simuler-credit.cpy".
 
        FIN-DE-MOIS.
            COPY "fin-de-mois.cpy".
