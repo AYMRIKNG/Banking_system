@@ -20,6 +20,8 @@
                WHEN "Frais"
                WHEN "Rembourse"
                WHEN "Cloture"
+               WHEN "Agios"
+               WHEN "Commission"
                    SET WS-CI-IDX-C TO 1
                    SEARCH WS-TAB-COMPTES
                        AT END

@@ -548,6 +548,55 @@
            05 WS-IFU-AFF-PFU       PIC Z(8)9.99.
            05 WS-IFU-AFF-NET       PIC Z(8)9.99.
 
+       01 WS-AGIOS.
+           05 WS-TAUX-AGIOS        PIC 99V99 VALUE 16.00.
+           05 WS-AG-COMM-JOUR      PIC 9(3)V99 VALUE 8.00.
+           05 WS-AG-COMM-MAX       PIC 9(3)V99 VALUE 80.00.
+           05 WS-AG-COMPTE         PIC 9(10).
+           05 WS-AG-MOIS           PIC 9(6).
+           05 WS-AG-MOIS-R REDEFINES WS-AG-MOIS.
+               10 WS-AG-ANNEE      PIC 9(4).
+               10 WS-AG-MM         PIC 9(2).
+           05 WS-AG-DETAIL         PIC X.
+           05 WS-AG-NOMBRES        PIC 9(11)V99.
+           05 WS-AG-NB-JOURS-DEBIT PIC 9(3).
+           05 WS-AG-AGIOS          PIC 9(9)V99.
+           05 WS-AG-NB-DEPASSEMENTS PIC 9(3).
+           05 WS-AG-COMMISSION     PIC 9(9)V99.
+           05 WS-AG-FOUND          PIC X.
+           05 WS-AG-ERREUR         PIC X.
+           05 WS-AG-IDX-C          PIC 9(4).
+           05 WS-AG-DATE-DEB       PIC 9(8).
+           05 WS-AG-DATE-SUIV      PIC 9(8).
+           05 WS-AG-DATE-FIN       PIC 9(8).
+           05 WS-AG-DATE-COUR      PIC 9(8).
+           05 WS-AG-INT-DEB        PIC 9(8).
+           05 WS-AG-INT-FIN        PIC 9(8).
+           05 WS-AG-INT-COUR       PIC 9(8).
+           05 WS-AG-SOLDE-DEB      PIC S9(9)V99.
+           05 WS-AG-SOLDE-JOUR     PIC S9(9)V99.
+           05 WS-AG-NB-JOUR        PIC 9(9)V99.
+           05 WS-AG-LIMITE-DEC     PIC S9(10)V99.
+           05 WS-AG-TOTAL-CPT      PIC 9(9)V99.
+           05 WS-AG-NB-ELIG        PIC 9(4).
+           05 WS-AG-TAB-ELIG OCCURS 500 TIMES.
+               10 WS-AG-ELIG-NUM   PIC 9(10).
+           05 WS-AG-K              PIC 9(4).
+           05 WS-AG-DEJA           PIC X.
+           05 WS-AG-NB-CPT-DEB     PIC 9(5).
+           05 WS-AG-TOT-AGIOS      PIC 9(9)V99.
+           05 WS-AG-TOT-COMM       PIC 9(9)V99.
+           05 WS-AG-TOT-GEN        PIC 9(9)V99.
+           05 WS-AG-JOUR-FMT       PIC X(10).
+           05 WS-AG-AFF-SOLDE      PIC -(16)9.99.
+           05 WS-AG-AFF-NBJ        PIC Z(11)9.99.
+           05 WS-AG-AFF-NOMBRES    PIC Z(10)9.99.
+           05 WS-AG-AFF-TOT-A      PIC Z(8)9.99.
+           05 WS-AG-AFF-TOT-C      PIC Z(8)9.99.
+           05 WS-AG-AFF-DEC        PIC Z(6)9.99.
+           05 WS-AG-AFF-TAUX       PIC Z9.99.
+           05 WS-AG-LIGNE          PIC X(80).
+
        PROCEDURE DIVISION.
 
        MAIN-PROGRAM.
@@ -664,6 +713,7 @@
            DISPLAY "3. Cloturer compte".
            DISPLAY "4. Verifier un IBAN".
            DISPLAY "5. Definir decouvert autorise".
+           DISPLAY "6. Simuler agios du mois".
            DISPLAY "9. Retour".
            DISPLAY "Choisissez une option : " WITH NO ADVANCING.
            ACCEPT SOUS-CHOIX.
@@ -679,6 +729,8 @@
                    PERFORM VERIFIER-IBAN
                WHEN 5
                    PERFORM DEFINIR-DECOUVERT
+               WHEN 6
+                   PERFORM SIMULER-AGIOS
                WHEN 9
                    CONTINUE
                WHEN OTHER
@@ -906,6 +958,15 @@
 
        LIRE-DECOUVERT.
            COPY "lire-decouvert.cpy".
+
+       CALCULER-AGIOS.
+           COPY "calcul-agios.cpy".
+
+       SIMULER-AGIOS.
+           COPY "simuler-agios.cpy".
+
+       PRELEVER-AGIOS.
+           COPY "prelever-agios.cpy".
 
 
        

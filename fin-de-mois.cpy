@@ -3,7 +3,10 @@
       *    1. Interets des comptes epargne
            PERFORM INTERET-EPARGNE.
 
-      *    2. Prelevement automatique des mensualites de credit
+      *    2. Agios et commissions d'intervention
+           PERFORM PRELEVER-AGIOS.
+
+      *    3. Prelevement automatique des mensualites de credit
            DISPLAY "--- Prelevement des mensualites ---".
            MOVE ZEROS TO WS-TOTAL-PRELEVE.
            MOVE ZEROS TO WS-NB-PRELEVES.
@@ -46,7 +49,7 @@
            DISPLAY "Total preleve : " WS-TOTAL-PRELEVE.
            DISPLAY "Impayes : " WS-NB-IMPAYES.
 
-      *    3. Virements permanents
+      *    4. Virements permanents
            DISPLAY "--- Virements permanents ---".
            MOVE ZEROS TO WS-NB-VIREMENTS-OK.
            MOVE ZEROS TO WS-NB-VIREMENTS-ECHEC.
@@ -74,7 +77,7 @@
            DISPLAY "Virements effectues : " WS-NB-VIREMENTS-OK.
            DISPLAY "Virements en echec : " WS-NB-VIREMENTS-ECHEC.
 
-      *    4. Frais de tenue de compte
+      *    5. Frais de tenue de compte
            MOVE ZEROS TO WS-TOTAL-FRAIS.
            PERFORM FRAIS-TENUE-COMPTE.
 

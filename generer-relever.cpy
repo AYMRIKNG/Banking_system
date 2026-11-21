@@ -89,6 +89,12 @@
                                WHEN TRANSACTION-TYPE = "ReportDeb"
                                     MOVE TRANSACTION-DATE(1:6)
                                         TO WS-TRANSACTION-MOIS
+                               WHEN TRANSACTION-TYPE = "Agios"
+                                    MOVE TRANSACTION-DATE(1:6)
+                                        TO WS-TRANSACTION-MOIS
+                               WHEN TRANSACTION-TYPE = "Commission"
+                                    MOVE TRANSACTION-DATE(1:6)
+                                        TO WS-TRANSACTION-MOIS
                            END-EVALUATE
 
                            IF WS-TRANSACTION-MOIS = WS-MOIS

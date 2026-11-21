@@ -28,6 +28,7 @@ Le menu conseiller est decoupe en sous-menus (option `6. Deconnexion`).
 - Cloturer compte (solde rendu, refuse si un credit est en cours ou si le solde est debiteur)
 - Verifier un IBAN (validation modulo 97 et verification du compte)
 - Definir decouvert autorise (plafond dans `decouvert.dat`, `0` pour supprimer ; interdit sur compte `Epargne` ou `Cloture`)
+- Simuler agios du mois (option `2.6` : methode des nombres debiteurs, tableau detaille des jours debiteurs, aucune modification des fichiers)
 
 **3. Operations**
 - Effectuer transaction (Depot, Retrait, Virement)
@@ -51,9 +52,10 @@ Le menu conseiller est decoupe en sous-menus (option `6. Deconnexion`).
 - Interets epargne (taux de la banque, une fois par mois)
 - Traitement fin de mois, une seule fois par mois :
   1. interets epargne
-  2. prelevement automatique des mensualites de credit
-  3. virements permanents
-  4. frais de tenue de compte (2.00 Courant, 5.00 Entreprise)
+  2. agios et commissions d'intervention sur comptes `Courant` et `Entreprise` debiteurs (prelevement force, transactions `Agios` et `Commission`, idempotent par compte et par mois, journalise sous `AGIOS`)
+  3. prelevement automatique des mensualites de credit
+  4. virements permanents
+  5. frais de tenue de compte (2.00 Courant, 5.00 Entreprise)
 - Statistiques (comptes par type, total des soldes, credits en cours, alertes...)
 - Classement des clients par avoirs (verbe SORT)
 - Consulter le journal d'audit (`journal.log`, filtre par date)
@@ -135,3 +137,12 @@ Regles de decision :
   - compte debiteur : `-10` (`Compte debiteur`)
   - epargne >= 10 % du montant demande : `+10`
 - Seuils : **A** (>= 70, octroi automatique), **E** (50 a 69, confirmation conseiller `O/N`), **R** (< 50, refus sans modification). Chaque scoring est trace dans `journal.log` (`SCORING`).
+
+## Agios et commissions d'intervention (option 2.6 et fin de mois)
+Les agios sur comptes debiteurs sont calcules par la **methode des nombres debiteurs** (`CALCULER-AGIOS` dans `calcul-agios.cpy`) :
+- **Solde de debut de mois** : reconstitue depuis le solde actuel moins l'effet net signe des transactions du mois et ulterieures (memes regles que `rejouer-transaction.cpy`).
+- **Parcours journalier** : du 1er au dernier jour du mois (ou jusqu'a la date du jour pour le mois en cours). Pour chaque jour ou le solde de fin de journee est negatif, `nombres debiteurs += |solde|`.
+- **Agios** : `nombres debiteurs * taux / 36500` arrondi au centime, avec un taux annuel de **16.00 %** (`WS-TAUX-AGIOS`).
+- **Commission d'intervention** : **8.00** par jour ou le solde de fin de journee est strictement inferieur a `-plafond` du decouvert autorise (`decouvert.dat`), plafonnee a **80.00** par mois.
+- **Simulation** (menu `Comptes -> 6. Simuler agios du mois`) : affiche le tableau detaille des jours debiteurs et le resume sans modifier aucun fichier.
+- **Prelevement en fin de mois** (etape 2 de `Traitement fin de mois`, juste apres les interets) : pour chaque compte `Courant` ou `Entreprise` sans transaction `Agios`/`Commission` sur le mois en cours, preleve de facon forcee `agios + commission` si > 0, enregistre les transactions `Agios` et `Commission`, credite `banque.dat` et trace l'operation dans `journal.log` (`AGIOS`).
