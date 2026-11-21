@@ -1,3 +1,4 @@
 *.exe
 transactions.csv
 tri.tmp
+journal.log

@@ -34,6 +34,9 @@
                ORGANIZATION IS LINE SEQUENTIAL
                FILE STATUS IS WS-STATUS.
            SELECT TRI-FILE ASSIGN TO "tri.tmp".
+           SELECT OPTIONAL JOURNAL-FILE ASSIGN TO "journal.log"
+               ORGANIZATION IS LINE SEQUENTIAL
+               FILE STATUS IS WS-STATUS.
 
        DATA DIVISION.
        FILE SECTION.
@@ -104,6 +107,9 @@
            05 TRI-CLIENT-ID        PIC 9(5).
            05 TRI-NAME             PIC A(30).
            05 TRI-NB-COMPTES       PIC 9(3).
+
+       FD JOURNAL-FILE.
+       01 JOURNAL-LINE             PIC X(100).
          
 
        WORKING-STORAGE SECTION.
@@ -236,7 +242,14 @@
            05 WS-CL-RANG-AFF       PIC Z(4)9.
            05 WS-CL-TOTAL-GENERAL  PIC 9(9)V99.
 
-       
+       01 WS-JOURNAL.
+           05 WS-JOURNAL-ACTION    PIC X(15).
+           05 WS-JOURNAL-DETAIL    PIC X(60).
+           05 WS-JOURNAL-STATUS    PIC XX.
+           05 WS-JOURNAL-NOW       PIC X(21).
+           05 WS-JOURNAL-DATE      PIC 9(8).
+           05 WS-JOURNAL-DATE-FMT  PIC X(10).
+           05 WS-JOURNAL-NB        PIC 9(5).
 
        PROCEDURE DIVISION.
 
@@ -245,6 +258,9 @@
            PERFORM UNTIL QUITTER = "O"
                PERFORM AFFICHER-MENU
            END-PERFORM
+           MOVE "ARRET" TO WS-JOURNAL-ACTION
+           MOVE "Fin de session" TO WS-JOURNAL-DETAIL
+           PERFORM ECRIRE-JOURNAL
            DISPLAY "Merci d'avoir utilise le systeme bancaire."
            STOP RUN.
 
@@ -282,6 +298,14 @@
                CLOSE TRANSACTION-FILE
            END-IF.
            ADD 1 TO WS-MAX-TRANS-NUM GIVING WS-COUNTER.
+
+           MOVE "DEMARRAGE" TO WS-JOURNAL-ACTION.
+           MOVE SPACES TO WS-JOURNAL-DETAIL.
+           STRING "Banque " DELIMITED BY SIZE
+               FUNCTION TRIM(BANQUE-NAME) DELIMITED BY SIZE
+               INTO WS-JOURNAL-DETAIL
+           END-STRING.
+           PERFORM ECRIRE-JOURNAL.
 
        AFFICHER-MENU.
            DISPLAY "==== MENU BANCAIRE ====".
@@ -414,6 +438,7 @@
            DISPLAY "2. Traitement fin de mois".
            DISPLAY "3. Statistiques".
            DISPLAY "4. Classement clients".
+           DISPLAY "5. Consulter journal".
            DISPLAY "9. Retour".
            DISPLAY "Choisissez une option : " WITH NO ADVANCING.
            ACCEPT SOUS-CHOIX.
@@ -427,6 +452,8 @@
                    PERFORM STATISTIQUES
                WHEN 4
                    PERFORM CLASSEMENT-CLIENTS
+               WHEN 5
+                   PERFORM CONSULTER-JOURNAL
                WHEN 9
                    CONTINUE
                WHEN OTHER
@@ -504,6 +531,12 @@
 
        CLASSEMENT-SORTIE.
            COPY "classement-sortie.cpy".
+
+       ECRIRE-JOURNAL.
+           COPY "ecrire-journal.cpy".
+
+       CONSULTER-JOURNAL.
+           COPY "consulter-journal.cpy".
 
 
        

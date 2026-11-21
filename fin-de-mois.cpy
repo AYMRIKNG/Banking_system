@@ -75,4 +75,18 @@
            DISPLAY "Virements en echec : " WS-NB-VIREMENTS-ECHEC.
 
       *    4. Frais de tenue de compte
+           MOVE ZEROS TO WS-TOTAL-FRAIS.
            PERFORM FRAIS-TENUE-COMPTE.
+
+           MOVE WS-TOTAL-FRAIS TO WS-MONTANT-AFF.
+           MOVE "FIN DE MOIS" TO WS-JOURNAL-ACTION.
+           MOVE SPACES TO WS-JOURNAL-DETAIL.
+           STRING "Mens=" DELIMITED BY SIZE
+               WS-NB-PRELEVES DELIMITED BY SIZE
+               " Vir=" DELIMITED BY SIZE
+               WS-NB-VIREMENTS-OK DELIMITED BY SIZE
+               " Frais=" DELIMITED BY SIZE
+               FUNCTION TRIM(WS-MONTANT-AFF) DELIMITED BY SIZE
+               INTO WS-JOURNAL-DETAIL
+           END-STRING.
+           PERFORM ECRIRE-JOURNAL.

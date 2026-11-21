@@ -47,3 +47,11 @@
            CLOSE CLIENT-FILE.
 
            DISPLAY "Client modifie avec succes.".
+
+           MOVE "MODIF CLIENT" TO WS-JOURNAL-ACTION.
+           MOVE SPACES TO WS-JOURNAL-DETAIL.
+           STRING "ID=" DELIMITED BY SIZE
+               WS-INPUT-ID(6:5) DELIMITED BY SIZE
+               INTO WS-JOURNAL-DETAIL
+           END-STRING.
+           PERFORM ECRIRE-JOURNAL.

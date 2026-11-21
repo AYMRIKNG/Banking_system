@@ -238,3 +238,11 @@
            ADD 1 TO WS-COUNTER.
 
            DISPLAY "Transaction annulee.".
+
+           MOVE "ANNULATION" TO WS-JOURNAL-ACTION.
+           MOVE SPACES TO WS-JOURNAL-DETAIL.
+           STRING "Trans=" DELIMITED BY SIZE
+               WS-ANN-ID DELIMITED BY SIZE
+               INTO WS-JOURNAL-DETAIL
+           END-STRING.
+           PERFORM ECRIRE-JOURNAL.

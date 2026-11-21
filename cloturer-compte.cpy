@@ -81,3 +81,14 @@
            ADD 1 TO WS-COUNTER.
 
            DISPLAY "Compte cloture. Solde rendu : " WS-INPUT-MONTANT.
+
+           MOVE WS-INPUT-MONTANT TO WS-MONTANT-AFF.
+           MOVE "CLOTURE CPT" TO WS-JOURNAL-ACTION.
+           MOVE SPACES TO WS-JOURNAL-DETAIL.
+           STRING "Cpt=" DELIMITED BY SIZE
+               WS-INPUT-COMPTE DELIMITED BY SIZE
+               " Solde=" DELIMITED BY SIZE
+               FUNCTION TRIM(WS-MONTANT-AFF) DELIMITED BY SIZE
+               INTO WS-JOURNAL-DETAIL
+           END-STRING.
+           PERFORM ECRIRE-JOURNAL.

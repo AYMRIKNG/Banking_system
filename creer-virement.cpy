@@ -101,3 +101,11 @@
            CLOSE VIREMENT-FILE.
 
            DISPLAY "Virement permanent cree. ID : " WS-MAX-VP-ID.
+
+           MOVE "VIR PERMANENT" TO WS-JOURNAL-ACTION.
+           MOVE SPACES TO WS-JOURNAL-DETAIL.
+           STRING "Creation ID=" DELIMITED BY SIZE
+               WS-MAX-VP-ID DELIMITED BY SIZE
+               INTO WS-JOURNAL-DETAIL
+           END-STRING.
+           PERFORM ECRIRE-JOURNAL.

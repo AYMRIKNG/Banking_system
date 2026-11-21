@@ -59,3 +59,11 @@
            CLOSE VIREMENT-FILE.
 
            DISPLAY "Virement permanent " WS-INPUT-VP-ID " arrete.".
+
+           MOVE "VIR PERMANENT" TO WS-JOURNAL-ACTION.
+           MOVE SPACES TO WS-JOURNAL-DETAIL.
+           STRING "Arret ID=" DELIMITED BY SIZE
+               WS-INPUT-VP-ID DELIMITED BY SIZE
+               INTO WS-JOURNAL-DETAIL
+           END-STRING.
+           PERFORM ECRIRE-JOURNAL.

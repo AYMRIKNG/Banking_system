@@ -95,3 +95,14 @@
            DISPLAY "Total a rembourser : " WS-TOTAL-CREDIT.
            DISPLAY "Mensualite : " WS-MENSUALITE
                " sur " WS-DUREE " mois".
+
+           MOVE WS-INPUT-MONTANT TO WS-MONTANT-AFF.
+           MOVE "CREDIT" TO WS-JOURNAL-ACTION.
+           MOVE SPACES TO WS-JOURNAL-DETAIL.
+           STRING "Cpt=" DELIMITED BY SIZE
+               WS-INPUT-COMPTE DELIMITED BY SIZE
+               " Mnt=" DELIMITED BY SIZE
+               FUNCTION TRIM(WS-MONTANT-AFF) DELIMITED BY SIZE
+               INTO WS-JOURNAL-DETAIL
+           END-STRING.
+           PERFORM ECRIRE-JOURNAL.

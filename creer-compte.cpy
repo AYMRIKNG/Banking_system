@@ -112,4 +112,14 @@
 
            
            CLOSE BANQUE-FILE.
+
+           MOVE "CREATION CPT" TO WS-JOURNAL-ACTION.
+           MOVE SPACES TO WS-JOURNAL-DETAIL.
+           STRING "Cpt=" DELIMITED BY SIZE
+               NEW-COMPTE-NUM DELIMITED BY SIZE
+               " " DELIMITED BY SIZE
+               FUNCTION TRIM(NEW-COMPTE-TYPE) DELIMITED BY SIZE
+               INTO WS-JOURNAL-DETAIL
+           END-STRING.
+           PERFORM ECRIRE-JOURNAL.
            

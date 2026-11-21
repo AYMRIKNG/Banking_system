@@ -197,4 +197,28 @@
 
            CLOSE COMPTE-FILE.
 
+           MOVE WS-INPUT-MONTANT TO WS-MONTANT-AFF.
+           MOVE "TRANSACTION" TO WS-JOURNAL-ACTION.
+           MOVE SPACES TO WS-JOURNAL-DETAIL.
+           IF WS-TRANS-TYPE = "Virement"
+               STRING FUNCTION TRIM(WS-TRANS-TYPE) DELIMITED BY SIZE
+                   " " DELIMITED BY SIZE
+                   WS-INPUT-COMPTE DELIMITED BY SIZE
+                   "->" DELIMITED BY SIZE
+                   WS-INPUT-ID DELIMITED BY SIZE
+                   " Mnt=" DELIMITED BY SIZE
+                   FUNCTION TRIM(WS-MONTANT-AFF) DELIMITED BY SIZE
+                   INTO WS-JOURNAL-DETAIL
+               END-STRING
+           ELSE
+               STRING FUNCTION TRIM(WS-TRANS-TYPE) DELIMITED BY SIZE
+                   " Cpt=" DELIMITED BY SIZE
+                   WS-INPUT-COMPTE DELIMITED BY SIZE
+                   " Mnt=" DELIMITED BY SIZE
+                   FUNCTION TRIM(WS-MONTANT-AFF) DELIMITED BY SIZE
+                   INTO WS-JOURNAL-DETAIL
+               END-STRING
+           END-IF.
+           PERFORM ECRIRE-JOURNAL.
+
 
