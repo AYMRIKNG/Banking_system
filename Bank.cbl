@@ -46,6 +46,9 @@
            SELECT OPTIONAL PIN-FILE ASSIGN TO "pin.dat"
                ORGANIZATION IS LINE SEQUENTIAL
                FILE STATUS IS WS-STATUS.
+           SELECT CONTROLE-FILE ASSIGN TO "controle.txt"
+               ORGANIZATION IS LINE SEQUENTIAL
+               FILE STATUS IS WS-STATUS.
 
        DATA DIVISION.
        FILE SECTION.
@@ -139,6 +142,9 @@
            05 PIN-HASH             PIC 9(10).
            05 PIN-ESSAIS           PIC 9.
            05 PIN-BLOQUE           PIC X.
+
+       FD CONTROLE-FILE.
+       01 CONTROLE-LINE            PIC X(100).
          
 
        WORKING-STORAGE SECTION.
@@ -267,6 +273,7 @@
        01 WS-GENERATION-COMPTE.
            05 WS-MAX-COMPTE-NUM    PIC 9(10) VALUE ZEROS.
            05 WS-NOUVEAU-NUM       PIC 9(10).
+           05 WS-SOLDE-INIT        PIC 9(9)V99.
        
        01 WS-GENERATION-CLIENT.
            05 WS-MAX-CLIENT-NUM    PIC 9(10) VALUE ZEROS.
@@ -340,6 +347,41 @@
            05 WS-PIN-ANCIEN        PIC X(20).
            05 WS-PIN-SAISIE        PIC X(20).
            05 WS-PIN-CONFIRM       PIC X(20).
+
+       01 WS-CONTROLE.
+           05 WS-CI-NB-COMPTES     PIC 9(4) VALUE 0.
+           05 WS-CI-NB-TRANS       PIC 9(4) VALUE 0.
+           05 WS-TAB-COMPTES OCCURS 500 TIMES
+               INDEXED BY WS-CI-IDX-C.
+               10 WS-TC-NUM        PIC 9(10).
+               10 WS-TC-SOLDE-FIC  PIC 9(9)V99.
+               10 WS-TC-SOLDE-REC  PIC S9(9)V99.
+           05 WS-TAB-TRANS OCCURS 3000 TIMES
+               INDEXED BY WS-CI-IDX-T.
+               10 WS-TT-ID         PIC 9(10).
+               10 WS-TT-COMPTE     PIC 9(10).
+               10 WS-TT-TYPE       PIC A(10).
+               10 WS-TT-MONTANT    PIC 9(9)V99.
+               10 WS-TT-DEST       PIC 9(10).
+           05 WS-CI-I              PIC 9(4).
+           05 WS-CI-TROP-PLEIN     PIC X.
+           05 WS-CI-NB-OK          PIC 9(4).
+           05 WS-CI-NB-ECART       PIC 9(4).
+           05 WS-CI-NB-ANOMALIES   PIC 9(4).
+           05 WS-CI-ECART          PIC S9(9)V99.
+           05 WS-CI-ECART-ABS      PIC 9(9)V99.
+           05 WS-CI-TOTAL-ECARTS   PIC 9(9)V99.
+           05 WS-CI-STATUT         PIC X(5).
+           05 WS-CI-CIBLE-COMPTE   PIC 9(10).
+           05 WS-CI-CIBLE-DEST     PIC 9(10).
+           05 WS-CI-CIBLE-TYPE     PIC A(10).
+           05 WS-CI-CIBLE-MONTANT  PIC 9(9)V99.
+           05 WS-CI-AFF-FIC        PIC -(9)9.99.
+           05 WS-CI-AFF-REC        PIC -(9)9.99.
+           05 WS-CI-AFF-ECART      PIC -(9)9.99.
+           05 WS-CI-AFF-TOTAL      PIC Z(8)9.99.
+           05 WS-CI-DATE-FMT       PIC X(10).
+           05 WS-CI-LIGNE          PIC X(100).
 
        PROCEDURE DIVISION.
 
@@ -539,6 +581,7 @@
            DISPLAY "4. Classement clients".
            DISPLAY "5. Consulter journal".
            DISPLAY "6. Alertes fraude".
+           DISPLAY "7. Controle integrite des soldes".
            DISPLAY "9. Retour".
            DISPLAY "Choisissez une option : " WITH NO ADVANCING.
            ACCEPT SOUS-CHOIX.
@@ -556,6 +599,8 @@
                    PERFORM CONSULTER-JOURNAL
                WHEN 6
                    PERFORM ALERTES-FRAUDE
+               WHEN 7
+                   PERFORM CONTROLE-INTEGRITE
                WHEN 9
                    CONTINUE
                WHEN OTHER
@@ -663,6 +708,9 @@
 
        VERIFIER-PROPRIETAIRE.
            COPY "verifier-proprietaire.cpy".
+
+       CONTROLE-INTEGRITE.
+           COPY "controle-integrite.cpy".
 
 
        

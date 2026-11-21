@@ -23,7 +23,7 @@ Le menu conseiller est decoupe en sous-menus (option `6. Deconnexion`).
 - Definir / debloquer PIN client
 
 **2. Comptes**
-- Creer compte (Courant, Epargne, Entreprise)
+- Creer compte (Courant, Epargne, Entreprise ; enregistre une transaction `Ouverture`)
 - Lister comptes client (avec IBAN francais)
 - Cloturer compte (solde rendu, refuse si un credit est en cours)
 - Verifier un IBAN (validation modulo 97 et verification du compte)
@@ -55,6 +55,7 @@ Le menu conseiller est decoupe en sous-menus (option `6. Deconnexion`).
 - Classement des clients par avoirs (verbe SORT)
 - Consulter le journal d'audit (`journal.log`, filtre par date)
 - Alertes fraude (consulter et marquer comme traitees)
+- Controle integrite des soldes (rapprochement comptes / transactions, rapport dans `controle.txt`)
 
 ### Espace client
 Acces restreint au client connecte :
@@ -88,3 +89,4 @@ Le script met `COB_UNIX_LF=Y`, sinon les REWRITE cassent les fichiers .dat sous 
 - `alerte.dat` : alertes de fraude (cree a la premiere alerte)
 - `conseiller.dat` : hash du mot de passe conseiller (cree au premier lancement)
 - `pin.dat` : hash des PIN clients, essais et statut de blocage (cree au premier PIN)
+- `controle.txt` : rapport du controle d'integrite des soldes

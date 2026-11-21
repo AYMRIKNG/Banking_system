@@ -52,6 +52,9 @@
                    NOT AT END
                        IF TRANSACTION-COMPTE = WS-INPUT-COMPTE
                            EVALUATE TRUE
+                               WHEN TRANSACTION-TYPE = "Ouverture"
+                                    MOVE TRANSACTION-DATE(1:6)
+                                        TO WS-TRANSACTION-MOIS
                                WHEN TRANSACTION-TYPE = "Depot"
                                     MOVE TRANSACTION-DATE(1:6)
                                         TO WS-TRANSACTION-MOIS

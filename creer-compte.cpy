@@ -47,7 +47,8 @@
                DISPLAY "Solde initial insuffisant"
                EXIT PARAGRAPH
            END-IF
-           
+
+           MOVE NEW-COMPTE-SOLDE TO WS-SOLDE-INIT.
            SUBTRACT BANQUE-FRAIS-COMPTE FROM NEW-COMPTE-SOLDE.
            
       *    Verifier si client existe
@@ -85,13 +86,23 @@
            MOVE WS-COUNTER         TO WS-TRANS-ID.
            MOVE NEW-COMPTE-NUM     TO WS-TRANS-COMPTE.
            MOVE WS-TODAY           TO WS-TRANS-DATE.
+           MOVE "Ouverture"        TO WS-TRANS-TYPE.
+           MOVE WS-SOLDE-INIT      TO WS-TRANS-MONTANT.
+           MOVE 0                  TO WS-TRANS-DEST.
+           MOVE WS-TRANSACTION     TO TRANSACTION-RECORD.
+           WRITE TRANSACTION-RECORD.
+           ADD 1 TO WS-COUNTER.
+
+           MOVE WS-COUNTER         TO WS-TRANS-ID.
+           MOVE NEW-COMPTE-NUM     TO WS-TRANS-COMPTE.
+           MOVE WS-TODAY           TO WS-TRANS-DATE.
            MOVE "Retrait"          TO WS-TRANS-TYPE.
            MOVE BANQUE-FRAIS-COMPTE TO WS-TRANS-MONTANT.
            MOVE 0                  TO WS-TRANS-DEST.
            MOVE WS-TRANSACTION     TO TRANSACTION-RECORD.
            WRITE TRANSACTION-RECORD.
            CLOSE TRANSACTION-FILE.
-           
+
            ADD 1 TO WS-COUNTER.
            
            DISPLAY "Ajout des frais bancaires au solde de la banque."
