@@ -27,6 +27,9 @@
            SELECT OPTIONAL CREDIT-FILE ASSIGN TO "credit.dat"
                ORGANIZATION IS LINE SEQUENTIAL
                FILE STATUS IS WS-STATUS.
+           SELECT CSV-FILE ASSIGN TO "transactions.csv"
+               ORGANIZATION IS LINE SEQUENTIAL
+               FILE STATUS IS WS-STATUS.
 
        DATA DIVISION.
        FILE SECTION.
@@ -78,6 +81,9 @@
            05 CREDIT-RESTANT      PIC 9(9)V99.
            05 CREDIT-MENSUALITE   PIC 9(9)V99.
            05 CREDIT-DERNIER-MOIS PIC 9(6).
+
+       FD CSV-FILE.
+       01 CSV-LINE                PIC X(100).
          
 
        WORKING-STORAGE SECTION.
@@ -146,6 +152,7 @@
            05 WS-TOTAL-RESTANT     PIC 9(9)V99.
            05 WS-NB-TRANS-MOIS     PIC 9(5).
        77 WS-MONTANT-AFF          PIC Z(8)9.99.
+       77 WS-NB-EXPORT            PIC 9(5).
 
        01 WS-PLAFOND.
            05 WS-PLAFOND-RETRAIT   PIC 9(9)V99 VALUE 1000.00.
@@ -297,6 +304,7 @@
            DISPLAY "1. Effectuer transaction".
            DISPLAY "2. Historique des transactions".
            DISPLAY "3. Generer releve".
+           DISPLAY "4. Export CSV".
            DISPLAY "9. Retour".
            DISPLAY "Choisissez une option : " WITH NO ADVANCING.
            ACCEPT SOUS-CHOIX.
@@ -308,6 +316,8 @@
                    PERFORM HISTORIQUE-TRANSACTIONS
                WHEN 3
                    PERFORM GENERER-RELEVE
+               WHEN 4
+                   PERFORM EXPORT-CSV
                WHEN 9
                    CONTINUE
                WHEN OTHER
@@ -399,6 +409,9 @@
 
        STATISTIQUES.
            COPY "statistiques.cpy".
+
+       EXPORT-CSV.
+           COPY "export-csv.cpy".
 
 
        
