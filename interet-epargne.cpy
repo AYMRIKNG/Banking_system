@@ -1,5 +1,27 @@
            DISPLAY "=== Interets des comptes epargne ===".
 
+      *    Une seule fois par mois
+           MOVE "N" TO WS-FOUND.
+           MOVE "00" TO WS-STATUS.
+           OPEN INPUT TRANSACTION-FILE.
+           PERFORM UNTIL WS-STATUS = "10" OR WS-FOUND = "Y"
+               READ TRANSACTION-FILE
+                   AT END
+                       MOVE "10" TO WS-STATUS
+                   NOT AT END
+                       IF TRANSACTION-TYPE = "Interet"
+                          AND TRANSACTION-DATE(1:6) = WS-TODAY(1:6)
+                           MOVE "Y" TO WS-FOUND
+                       END-IF
+               END-READ
+           END-PERFORM.
+           CLOSE TRANSACTION-FILE.
+
+           IF WS-FOUND = "Y"
+               DISPLAY "Interets deja verses ce mois-ci."
+               EXIT PARAGRAPH
+           END-IF.
+
            OPEN I-O BANQUE-FILE.
            READ BANQUE-FILE
                AT END
