@@ -134,6 +134,19 @@
            05 WS-NB-PRELEVES       PIC 9(5).
            05 WS-NB-IMPAYES        PIC 9(5).
 
+       01 WS-STATS.
+           05 WS-NB-COURANT        PIC 9(5).
+           05 WS-NB-EPARGNE        PIC 9(5).
+           05 WS-NB-ENTREPRISE     PIC 9(5).
+           05 WS-NB-CLOTURE        PIC 9(5).
+           05 WS-TOTAL-DEPOTS      PIC 9(9)V99.
+           05 WS-MAX-SOLDE         PIC 9(9)V99.
+           05 WS-MAX-COMPTE        PIC 9(10).
+           05 WS-NB-CREDITS        PIC 9(5).
+           05 WS-TOTAL-RESTANT     PIC 9(9)V99.
+           05 WS-NB-TRANS-MOIS     PIC 9(5).
+       77 WS-MONTANT-AFF          PIC Z(8)9.99.
+
        01 WS-PLAFOND.
            05 WS-PLAFOND-RETRAIT   PIC 9(9)V99 VALUE 1000.00.
            05 WS-TOTAL-JOUR        PIC 9(9)V99.
@@ -324,6 +337,7 @@
            DISPLAY "---- BANQUE ----".
            DISPLAY "1. Interets epargne".
            DISPLAY "2. Traitement fin de mois".
+           DISPLAY "3. Statistiques".
            DISPLAY "9. Retour".
            DISPLAY "Choisissez une option : " WITH NO ADVANCING.
            ACCEPT SOUS-CHOIX.
@@ -333,6 +347,8 @@
                    PERFORM INTERET-EPARGNE
                WHEN 2
                    PERFORM FIN-DE-MOIS
+               WHEN 3
+                   PERFORM STATISTIQUES
                WHEN 9
                    CONTINUE
                WHEN OTHER
@@ -380,6 +396,9 @@
 
        PRELEVER-MENSUALITE.
            COPY "prelever-mensualite.cpy".
+
+       STATISTIQUES.
+           COPY "statistiques.cpy".
 
 
        
