@@ -126,6 +126,17 @@
            05 WS-INTERET           PIC 9(9)V99.
            05 WS-TOTAL-INTERETS    PIC 9(9)V99.
 
+       01 WS-MODIF-CLIENT.
+           05 WS-MODIF-ADRESSE     PIC X(50).
+           05 WS-MODIF-PHONE       PIC X(15).
+
+       01 WS-RECHERCHE-CLIENT.
+           05 WS-RECHERCHE         PIC X(30).
+           05 WS-NOM-MAJ           PIC X(30).
+           05 WS-LONGUEUR          PIC 99.
+           05 WS-OCCURENCES        PIC 9(3).
+           05 WS-NB-TROUVES        PIC 9(5).
+
        01 WS-GENERATION-COMPTE.
            05 WS-MAX-COMPTE-NUM    PIC 9(10) VALUE ZEROS.
            05 WS-NOUVEAU-NUM       PIC 9(10).
@@ -215,6 +226,8 @@
        MENU-CLIENTS.
            DISPLAY "---- CLIENTS ----".
            DISPLAY "1. Ajouter client".
+           DISPLAY "2. Modifier client".
+           DISPLAY "3. Rechercher client".
            DISPLAY "9. Retour".
            DISPLAY "Choisissez une option : " WITH NO ADVANCING.
            ACCEPT SOUS-CHOIX.
@@ -222,6 +235,10 @@
            EVALUATE SOUS-CHOIX
                WHEN 1
                    PERFORM AJOUTER-CLIENT
+               WHEN 2
+                   PERFORM MODIFIER-CLIENT
+               WHEN 3
+                   PERFORM RECHERCHER-CLIENT
                WHEN 9
                    CONTINUE
                WHEN OTHER
@@ -306,6 +323,12 @@
 
        AJOUTER-CLIENT.
            COPY "ajouter-client.cpy".
+
+       MODIFIER-CLIENT.
+           COPY "modifier-client.cpy".
+
+       RECHERCHER-CLIENT.
+           COPY "rechercher-client.cpy".
 
        CREER-COMPTE.
            COPY "creer-compte.cpy".
