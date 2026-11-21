@@ -64,9 +64,17 @@
                EXIT PARAGRAPH
            END-IF.
 
-           IF COMPTE-SOLDE < VP-MONTANT
+           IF COMPTE-TYPE = "Epargne"
+               MOVE ZEROS TO WS-DEC-PLAFOND
+           ELSE
+               MOVE COMPTE-NUM TO WS-DEC-COMPTE
+               PERFORM LIRE-DECOUVERT
+           END-IF.
+           COMPUTE WS-DEC-SOLDE-PROJ = COMPTE-SOLDE - VP-MONTANT.
+           COMPUTE WS-DEC-LIMITE = 0 - WS-DEC-PLAFOND.
+           IF WS-DEC-SOLDE-PROJ < WS-DEC-LIMITE
                DISPLAY "Virement " VP-ID
-                   " : solde insuffisant sur " VP-SOURCE
+                   " : depassement du decouvert sur " VP-SOURCE
                CLOSE COMPTE-FILE
                ADD 1 TO WS-NB-VIREMENTS-ECHEC
                EXIT PARAGRAPH

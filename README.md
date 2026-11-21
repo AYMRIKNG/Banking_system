@@ -24,15 +24,17 @@ Le menu conseiller est decoupe en sous-menus (option `6. Deconnexion`).
 
 **2. Comptes**
 - Creer compte (Courant, Epargne, Entreprise ; enregistre une transaction `Ouverture`)
-- Lister comptes client (avec IBAN francais)
-- Cloturer compte (solde rendu, refuse si un credit est en cours)
+- Lister comptes client (avec IBAN francais, solde signe et decouvert autorise si > 0)
+- Cloturer compte (solde rendu, refuse si un credit est en cours ou si le solde est debiteur)
 - Verifier un IBAN (validation modulo 97 et verification du compte)
+- Definir decouvert autorise (plafond dans `decouvert.dat`, `0` pour supprimer ; interdit sur compte `Epargne` ou `Cloture`)
 
 **3. Operations**
 - Effectuer transaction (Depot, Retrait, Virement)
+  - soldes signes (`PIC S9(9)V99`) et regle de decouvert autorise (`solde - montant >= -plafond`) appliquee a tous les debits (retraits, virements, lots, virements permanents, mensualites, frais, annulations) ; les comptes `Epargne` ont toujours un plafond de `0`
   - plafond de retrait de 1000.00 par jour et par compte
   - aucune operation possible sur un compte cloture
-  - detection de fraude automatique sur Retrait et Virement (gros montant, rafale, vidage)
+  - detection de fraude automatique sur Retrait et Virement (gros montant, rafale, vidage y compris passage en negatif)
 - Historique des transactions
 - Generer releve mensuel (avec IBAN en en-tete)
 - Export CSV des transactions (`transactions.csv`)
@@ -57,7 +59,7 @@ Le menu conseiller est decoupe en sous-menus (option `6. Deconnexion`).
 - Consulter le journal d'audit (`journal.log`, filtre par date)
 - Alertes fraude (consulter et marquer comme traitees)
 - Controle integrite des soldes (rapprochement comptes / transactions, rapport dans `controle.txt`)
-- Cloture annuelle / archivage (archive les transactions `<= AAAA` dans `transaction_AAAA.dat`, genere les reports a nouveau et l'IFU dans `ifu_AAAA.txt`)
+- Cloture annuelle / archivage (archive les transactions `<= AAAA` dans `transaction_AAAA.dat`, genere les reports a nouveau `Report` / `ReportDeb` et l'IFU dans `ifu_AAAA.txt`)
 
 ### Espace client
 Acces restreint au client connecte :
@@ -83,7 +85,8 @@ Le script met `COB_UNIX_LF=Y`, sinon les REWRITE cassent les fichiers .dat sous 
 ## Fichiers
 - `banque.dat` : infos de la banque (solde, taux, frais)
 - `client.dat` : clients
-- `compte.dat` : comptes
+- `compte.dat` : comptes (soldes signes `PIC S9(9)V99`, signe incorpore en fin de zone)
+- `decouvert.dat` : plafonds de decouvert autorise par compte (cree au premier decouvert)
 - `transaction.dat` : transactions
 - `credit.dat` : credits en cours (cree au premier credit)
 - `virement.dat` : virements permanents (cree au premier virement)
@@ -109,7 +112,7 @@ Codes de rejet (`rejets.txt`) :
 - `R02` : compte cloture
 - `R03` : type invalide
 - `R04` : montant nul
-- `R05` : solde insuffisant
+- `R05` : depassement du decouvert autorise
 - `R06` : compte destination inconnu ou cloture
 - `R07` : compte destination egal au compte source
 
@@ -129,5 +132,6 @@ Regles de decision :
   - endettement > 30 % : `-25` ; > 20 % : `-10`
   - anciennete < 3 mois : `-20` ; < 12 mois : `-10`
   - chaque alerte fraude ouverte : `-15` (plafond `-45`)
+  - compte debiteur : `-10` (`Compte debiteur`)
   - epargne >= 10 % du montant demande : `+10`
 - Seuils : **A** (>= 70, octroi automatique), **E** (50 a 69, confirmation conseiller `O/N`), **R** (< 50, refus sans modification). Chaque scoring est trace dans `journal.log` (`SCORING`).

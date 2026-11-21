@@ -300,13 +300,24 @@
                      END-IF
                    END-IF
 
-      *            R05 : solde insuffisant
+      *            R05 : depassement du decouvert autorise
                    IF WS-LOT-CODE-REJET = SPACES
                       AND (WS-LD-OP = "Retrait"
                            OR WS-LD-OP = "Virement")
-                      AND WS-LOT-SOLDE-SRC < WS-LD-MONTANT
-                     MOVE "R05" TO WS-LOT-CODE-REJET
-                     MOVE "Solde insuffisant" TO WS-LOT-LIB-REJET
+                     IF WS-LOT-TYPE-SRC = "Epargne"
+                       MOVE ZEROS TO WS-DEC-PLAFOND
+                     ELSE
+                       MOVE WS-LD-COMPTE TO WS-DEC-COMPTE
+                       PERFORM LIRE-DECOUVERT
+                     END-IF
+                     COMPUTE WS-DEC-SOLDE-PROJ =
+                       WS-LOT-SOLDE-SRC - WS-LD-MONTANT
+                     COMPUTE WS-DEC-LIMITE = 0 - WS-DEC-PLAFOND
+                     IF WS-DEC-SOLDE-PROJ < WS-DEC-LIMITE
+                       MOVE "R05" TO WS-LOT-CODE-REJET
+                       MOVE "Depassement du decouvert autorise"
+                         TO WS-LOT-LIB-REJET
+                     END-IF
                    END-IF
 
       *            Rejet ou application

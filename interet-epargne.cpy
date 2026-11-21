@@ -43,6 +43,7 @@
                        MOVE "10" TO WS-STATUS
                    NOT AT END
                        IF COMPTE-TYPE = "Epargne"
+                          AND COMPTE-SOLDE > 0
                            COMPUTE WS-INTERET ROUNDED =
                                COMPTE-SOLDE * BANQUE-INTERETS / 100
                            IF WS-INTERET > 0

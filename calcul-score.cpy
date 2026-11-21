@@ -6,6 +6,7 @@
                          WS-SC-ANCIENNETE
                          WS-SC-NB-ALERTES
                          WS-SC-EPARGNE
+                         WS-SC-NB-DEBITEURS
                          WS-SC-ENDETTEMENT
                          WS-SC-SCORE.
            MOVE SPACE TO WS-SC-DECISION.
@@ -54,7 +55,17 @@
                                        WS-SCW-CPT(WS-SCW-NB-COMPTES)
                                END-IF
                                IF COMPTE-TYPE = "Epargne"
-                                   ADD COMPTE-SOLDE TO WS-SC-EPARGNE
+                                   IF COMPTE-SOLDE > 0
+                                       ADD COMPTE-SOLDE
+                                           TO WS-SC-EPARGNE
+                                   END-IF
+                               END-IF
+                               IF COMPTE-TYPE NOT = "Epargne"
+                                  AND COMPTE-TYPE NOT = "Cloture"
+                                  AND COMPTE-SOLDE < 0
+                                   IF WS-SC-NB-DEBITEURS < 999
+                                       ADD 1 TO WS-SC-NB-DEBITEURS
+                                   END-IF
                                END-IF
                            END-IF
                    END-READ

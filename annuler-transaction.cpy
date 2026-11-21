@@ -114,8 +114,17 @@
                END-IF
 
                IF WS-ANN-TYPE = "Depot"
-                   IF COMPTE-SOLDE < WS-ANN-MONTANT
-                       DISPLAY "Solde insuffisant pour annulation."
+                   IF COMPTE-TYPE = "Epargne"
+                       MOVE ZEROS TO WS-DEC-PLAFOND
+                   ELSE
+                       MOVE COMPTE-NUM TO WS-DEC-COMPTE
+                       PERFORM LIRE-DECOUVERT
+                   END-IF
+                   COMPUTE WS-DEC-SOLDE-PROJ =
+                       COMPTE-SOLDE - WS-ANN-MONTANT
+                   COMPUTE WS-DEC-LIMITE = 0 - WS-DEC-PLAFOND
+                   IF WS-DEC-SOLDE-PROJ < WS-DEC-LIMITE
+                       DISPLAY "Depassement du decouvert autorise."
                        CLOSE COMPTE-FILE
                        EXIT PARAGRAPH
                    END-IF
@@ -154,8 +163,17 @@
                    CLOSE COMPTE-FILE
                    EXIT PARAGRAPH
                END-IF
-               IF COMPTE-SOLDE < WS-ANN-MONTANT
-                   DISPLAY "Solde destination insuffisant."
+               IF COMPTE-TYPE = "Epargne"
+                   MOVE ZEROS TO WS-DEC-PLAFOND
+               ELSE
+                   MOVE COMPTE-NUM TO WS-DEC-COMPTE
+                   PERFORM LIRE-DECOUVERT
+               END-IF
+               COMPUTE WS-DEC-SOLDE-PROJ =
+                   COMPTE-SOLDE - WS-ANN-MONTANT
+               COMPUTE WS-DEC-LIMITE = 0 - WS-DEC-PLAFOND
+               IF WS-DEC-SOLDE-PROJ < WS-DEC-LIMITE
+                   DISPLAY "Depassement du decouvert autorise."
                    CLOSE COMPTE-FILE
                    EXIT PARAGRAPH
                END-IF

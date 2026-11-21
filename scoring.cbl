@@ -12,6 +12,7 @@
        77 WS-MALUS-ENDETT          PIC 9(3) VALUE 0.
        77 WS-MALUS-ANC             PIC 9(3) VALUE 0.
        77 WS-MALUS-ALERTE          PIC 9(3) VALUE 0.
+       77 WS-MALUS-DEBIT           PIC 9(3) VALUE 0.
        77 WS-MAX-MALUS             PIC 9(3) VALUE 0.
 
        LINKAGE SECTION.
@@ -23,6 +24,7 @@
            05 LK-SC-NB-ALERTES     PIC 9(3).
            05 LK-SC-EPARGNE        PIC 9(9)V99.
            05 LK-SC-MONTANT        PIC 9(9)V99.
+           05 LK-SC-NB-DEBITEURS   PIC 9(3).
            05 LK-SC-ENDETTEMENT    PIC 9(3)V99.
            05 LK-SC-SCORE          PIC 9(3).
            05 LK-SC-DECISION       PIC X.
@@ -65,6 +67,7 @@
            MOVE ZEROS TO WS-MALUS-ENDETT
                          WS-MALUS-ANC
                          WS-MALUS-ALERTE
+                         WS-MALUS-DEBIT
                          WS-MAX-MALUS.
 
            IF LK-SC-ENDETTEMENT > 30
@@ -91,6 +94,11 @@
                COMPUTE WS-MALUS-ALERTE = LK-SC-NB-ALERTES * 15
            END-IF.
            SUBTRACT WS-MALUS-ALERTE FROM WS-SCORE-CALC.
+
+           IF LK-SC-NB-DEBITEURS > 0
+               MOVE 10 TO WS-MALUS-DEBIT
+           END-IF.
+           SUBTRACT WS-MALUS-DEBIT FROM WS-SCORE-CALC.
 
            IF LK-SC-MONTANT > 0
               AND (LK-SC-EPARGNE * 10) >= LK-SC-MONTANT
@@ -126,31 +134,33 @@
            IF WS-MALUS-ANC > WS-MAX-MALUS
                MOVE WS-MALUS-ANC TO WS-MAX-MALUS
            END-IF.
-
-           IF WS-MAX-MALUS = 0
-               MOVE "Dossier favorable" TO LK-SC-MOTIF
-           ELSE
-               IF WS-MALUS-ALERTE = WS-MAX-MALUS
-                   MOVE "Alertes fraude ouvertes" TO LK-SC-MOTIF
-               ELSE
-                   IF WS-MALUS-ENDETT = WS-MAX-MALUS
-                       IF WS-MALUS-ENDETT = 25
-                           MOVE "Taux d endettement eleve (> 30%)"
-                               TO LK-SC-MOTIF
-                       ELSE
-                           MOVE "Taux d endettement modere (> 20%)"
-                               TO LK-SC-MOTIF
-                       END-IF
-                   ELSE
-                       IF WS-MALUS-ANC = 20
-                           MOVE "Anciennete insuffisante (< 3 mois)"
-                               TO LK-SC-MOTIF
-                       ELSE
-                           MOVE "Anciennete limitee (< 12 mois)"
-                               TO LK-SC-MOTIF
-                       END-IF
-                   END-IF
-               END-IF
+           IF WS-MALUS-DEBIT > WS-MAX-MALUS
+               MOVE WS-MALUS-DEBIT TO WS-MAX-MALUS
            END-IF.
+
+           EVALUATE TRUE
+               WHEN WS-MAX-MALUS = 0
+                   MOVE "Dossier favorable" TO LK-SC-MOTIF
+               WHEN WS-MALUS-ALERTE = WS-MAX-MALUS
+                   MOVE "Alertes fraude ouvertes" TO LK-SC-MOTIF
+               WHEN WS-MALUS-ENDETT = WS-MAX-MALUS
+                   IF WS-MALUS-ENDETT = 25
+                       MOVE "Taux d endettement eleve (> 30%)"
+                           TO LK-SC-MOTIF
+                   ELSE
+                       MOVE "Taux d endettement modere (> 20%)"
+                           TO LK-SC-MOTIF
+                   END-IF
+               WHEN WS-MALUS-ANC = WS-MAX-MALUS
+                   IF WS-MALUS-ANC = 20
+                       MOVE "Anciennete insuffisante (< 3 mois)"
+                           TO LK-SC-MOTIF
+                   ELSE
+                       MOVE "Anciennete limitee (< 12 mois)"
+                           TO LK-SC-MOTIF
+                   END-IF
+               WHEN OTHER
+                   MOVE "Compte debiteur" TO LK-SC-MOTIF
+           END-EVALUATE.
 
            GOBACK.

@@ -78,27 +78,13 @@
                END-IF
            END-PERFORM.
 
-      *    Calculer et verifier les reports avant toute ecriture
-           MOVE "N" TO WS-ARCH-ERREUR.
+      *    Calculer les reports avant toute ecriture
            PERFORM VARYING WS-CI-I FROM 1 BY 1
                UNTIL WS-CI-I > WS-CI-NB-COMPTES
                COMPUTE WS-ARCH-REPORT =
                    WS-TC-SOLDE-FIC(WS-CI-I) - WS-TC-SOLDE-REC(WS-CI-I)
-               IF WS-ARCH-REPORT < 0
-                   MOVE WS-ARCH-REPORT TO WS-CI-AFF-ECART
-                   DISPLAY "Erreur : report negatif sur compte "
-                       WS-TC-NUM(WS-CI-I) " ("
-                       FUNCTION TRIM(WS-CI-AFF-ECART) ")."
-                   MOVE "O" TO WS-ARCH-ERREUR
-               ELSE
-                   MOVE WS-ARCH-REPORT TO WS-TC-REPORT(WS-CI-I)
-               END-IF
+               MOVE WS-ARCH-REPORT TO WS-TC-REPORT(WS-CI-I)
            END-PERFORM.
-
-           IF WS-ARCH-ERREUR = "O"
-               DISPLAY "Archivage abandonne : aucune modification."
-               EXIT PARAGRAPH
-           END-IF.
 
       *    Ecrire l'archive transaction_AAAA.dat
            MOVE "00" TO WS-STATUS.
@@ -133,8 +119,14 @@
                MOVE WS-COUNTER            TO WS-TRANS-ID
                MOVE WS-TC-NUM(WS-CI-I)    TO WS-TRANS-COMPTE
                MOVE WS-ARCH-DATE-REP      TO WS-TRANS-DATE
-               MOVE "Report"              TO WS-TRANS-TYPE
-               MOVE WS-TC-REPORT(WS-CI-I) TO WS-TRANS-MONTANT
+               IF WS-TC-REPORT(WS-CI-I) < 0
+                   MOVE "ReportDeb"       TO WS-TRANS-TYPE
+                   COMPUTE WS-TRANS-MONTANT =
+                       FUNCTION ABS(WS-TC-REPORT(WS-CI-I))
+               ELSE
+                   MOVE "Report"          TO WS-TRANS-TYPE
+                   MOVE WS-TC-REPORT(WS-CI-I) TO WS-TRANS-MONTANT
+               END-IF
                MOVE ZERO                  TO WS-TRANS-DEST
                MOVE WS-TRANSACTION        TO TRANSACTION-RECORD
                WRITE TRANSACTION-RECORD

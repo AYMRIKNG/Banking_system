@@ -31,7 +31,8 @@
                        END-EVALUATE
                        IF COMPTE-TYPE NOT = "Cloture"
                            ADD COMPTE-SOLDE TO WS-TOTAL-DEPOTS
-                           IF COMPTE-SOLDE > WS-MAX-SOLDE
+                           IF WS-MAX-COMPTE = 0
+                              OR COMPTE-SOLDE > WS-MAX-SOLDE
                                MOVE COMPTE-SOLDE TO WS-MAX-SOLDE
                                MOVE COMPTE-NUM TO WS-MAX-COMPTE
                            END-IF
@@ -96,11 +97,11 @@
            DISPLAY "Comptes epargne    : " WS-NB-EPARGNE.
            DISPLAY "Comptes entreprise : " WS-NB-ENTREPRISE.
            DISPLAY "Comptes clotures   : " WS-NB-CLOTURE.
-           MOVE WS-TOTAL-DEPOTS TO WS-MONTANT-AFF.
-           DISPLAY "Total des soldes   : " WS-MONTANT-AFF.
-           MOVE WS-MAX-SOLDE TO WS-MONTANT-AFF.
+           MOVE WS-TOTAL-DEPOTS TO WS-SOLDE-AFF.
+           DISPLAY "Total des soldes   : " WS-SOLDE-AFF.
+           MOVE WS-MAX-SOLDE TO WS-SOLDE-AFF.
            DISPLAY "Plus gros compte   : " WS-MAX-COMPTE
-               " (" WS-MONTANT-AFF ")".
+               " (" FUNCTION TRIM(WS-SOLDE-AFF) ")".
            DISPLAY "Credits en cours   : " WS-NB-CREDITS.
            MOVE WS-TOTAL-RESTANT TO WS-MONTANT-AFF.
            DISPLAY "Reste a rembourser : " WS-MONTANT-AFF.

@@ -43,9 +43,15 @@
                                MOVE ZEROS TO WS-FRAIS
                        END-EVALUATE
                        IF WS-FRAIS > 0
-                           IF COMPTE-SOLDE < WS-FRAIS
+                           MOVE COMPTE-NUM TO WS-DEC-COMPTE
+                           PERFORM LIRE-DECOUVERT
+                           COMPUTE WS-DEC-SOLDE-PROJ =
+                               COMPTE-SOLDE - WS-FRAIS
+                           COMPUTE WS-DEC-LIMITE = 0 - WS-DEC-PLAFOND
+                           IF WS-DEC-SOLDE-PROJ < WS-DEC-LIMITE
                                DISPLAY "Compte " COMPTE-NUM
-                                   " : solde insuffisant pour les frais"
+                                   " : depassement du decouvert "
+                                   "pour les frais"
                                ADD 1 TO WS-NB-FRAIS-ECHEC
                            ELSE
                                SUBTRACT WS-FRAIS FROM COMPTE-SOLDE

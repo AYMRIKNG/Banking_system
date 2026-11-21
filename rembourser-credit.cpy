@@ -56,8 +56,17 @@
                EXIT PARAGRAPH
            END-IF.
 
-           IF COMPTE-SOLDE < WS-INPUT-MONTANT
-               DISPLAY "Solde insuffisant pour la mensualite."
+           IF COMPTE-TYPE = "Epargne"
+               MOVE ZEROS TO WS-DEC-PLAFOND
+           ELSE
+               MOVE COMPTE-NUM TO WS-DEC-COMPTE
+               PERFORM LIRE-DECOUVERT
+           END-IF.
+           COMPUTE WS-DEC-SOLDE-PROJ =
+               COMPTE-SOLDE - WS-INPUT-MONTANT.
+           COMPUTE WS-DEC-LIMITE = 0 - WS-DEC-PLAFOND.
+           IF WS-DEC-SOLDE-PROJ < WS-DEC-LIMITE
+               DISPLAY "Depassement du decouvert autorise."
                CLOSE COMPTE-FILE
                CLOSE CREDIT-FILE
                EXIT PARAGRAPH

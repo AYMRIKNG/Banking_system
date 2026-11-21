@@ -29,9 +29,18 @@
                EXIT PARAGRAPH
            END-IF.
 
-           IF COMPTE-SOLDE < WS-INPUT-MONTANT
+           IF COMPTE-TYPE = "Epargne"
+               MOVE ZEROS TO WS-DEC-PLAFOND
+           ELSE
+               MOVE COMPTE-NUM TO WS-DEC-COMPTE
+               PERFORM LIRE-DECOUVERT
+           END-IF.
+           COMPUTE WS-DEC-SOLDE-PROJ =
+               COMPTE-SOLDE - WS-INPUT-MONTANT.
+           COMPUTE WS-DEC-LIMITE = 0 - WS-DEC-PLAFOND.
+           IF WS-DEC-SOLDE-PROJ < WS-DEC-LIMITE
                DISPLAY "Impaye : compte " CREDIT-COMPTE
-                   " solde insuffisant."
+                   " depassement du decouvert autorise."
                CLOSE COMPTE-FILE
                ADD 1 TO WS-NB-IMPAYES
                EXIT PARAGRAPH

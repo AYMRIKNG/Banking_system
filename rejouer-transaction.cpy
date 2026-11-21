@@ -71,6 +71,19 @@
                                TO WS-TC-SOLDE-REC(WS-CI-IDX-C)
                    END-SEARCH
 
+               WHEN "ReportDeb"
+                   SET WS-CI-IDX-C TO 1
+                   SEARCH WS-TAB-COMPTES
+                       AT END
+                           CONTINUE
+                       WHEN WS-CI-IDX-C > WS-CI-NB-COMPTES
+                           CONTINUE
+                       WHEN WS-TC-NUM(WS-CI-IDX-C)
+                           = WS-TT-COMPTE(WS-CI-I)
+                           COMPUTE WS-TC-SOLDE-REC(WS-CI-IDX-C) =
+                               0 - WS-TT-MONTANT(WS-CI-I)
+                   END-SEARCH
+
                WHEN "Annulation"
                    MOVE "N" TO WS-FOUND
                    SET WS-CI-IDX-T TO 1

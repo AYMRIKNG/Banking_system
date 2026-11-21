@@ -50,8 +50,15 @@
                EXIT PARAGRAPH
            END-IF.
 
+           IF COMPTE-SOLDE < 0
+               DISPLAY "Solde debiteur : regularisez avant cloture."
+               CLOSE COMPTE-FILE
+               EXIT PARAGRAPH
+           END-IF.
+
            DISPLAY "Type  : " COMPTE-TYPE.
-           DISPLAY "Solde : " COMPTE-SOLDE.
+           MOVE COMPTE-SOLDE TO WS-SOLDE-AFF.
+           DISPLAY "Solde : " FUNCTION TRIM(WS-SOLDE-AFF).
            DISPLAY "Confirmer la cloture (O/N) : " WITH NO ADVANCING.
            ACCEPT WS-CONFIRMATION.
 

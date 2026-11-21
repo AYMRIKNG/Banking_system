@@ -23,9 +23,21 @@
                                           WS-IBAN-AFFICHE
                            MOVE ZERO TO WS-IBAN-RETOUR
                            CALL "CALCUL-IBAN" USING WS-CALCUL-IBAN
+                           MOVE COMPTE-SOLDE TO WS-SOLDE-AFF
                            DISPLAY "Compte : " COMPTE-NUM
                            DISPLAY "Type : " COMPTE-TYPE
-                           DISPLAY "Solde : " COMPTE-SOLDE
+                           DISPLAY "Solde : "
+                               FUNCTION TRIM(WS-SOLDE-AFF)
+                           IF COMPTE-TYPE NOT = "Epargne"
+                              AND COMPTE-TYPE NOT = "Cloture"
+                               MOVE COMPTE-NUM TO WS-DEC-COMPTE
+                               PERFORM LIRE-DECOUVERT
+                               IF WS-DEC-PLAFOND > 0
+                                   MOVE WS-DEC-PLAFOND TO WS-DEC-AFF
+                                   DISPLAY "Decouvert autorise : "
+                                       FUNCTION TRIM(WS-DEC-AFF)
+                               END-IF
+                           END-IF
                            DISPLAY "IBAN : " WS-IBAN-AFFICHE
                            DISPLAY "-----------------------------"
                            MOVE "Y" TO WS-FOUND

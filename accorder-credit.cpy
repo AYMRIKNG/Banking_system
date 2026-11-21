@@ -91,6 +91,8 @@
                WS-SC-ANCIENNETE " mois".
            DISPLAY "Alertes ouvertes    : "
                WS-SC-NB-ALERTES.
+           DISPLAY "Comptes debiteurs   : "
+               WS-SC-NB-DEBITEURS.
            MOVE WS-SC-EPARGNE TO WS-MONTANT-AFF.
            DISPLAY "Epargne totale      : "
                FUNCTION TRIM(WS-MONTANT-AFF).

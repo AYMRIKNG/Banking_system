@@ -41,7 +41,9 @@
                    WHEN 3
                        IF WS-INPUT-MONTANT >= WS-SEUIL-VIDAGE
                           AND WS-SOLDE-AVANT > 0
-                          AND (WS-SOLDE-APRES * 10) < WS-SOLDE-AVANT
+                          AND (WS-SOLDE-APRES <= 0
+                               OR (WS-SOLDE-APRES * 10)
+                                  < WS-SOLDE-AVANT)
                            MOVE "VIDAGE" TO WS-ALERTE-REGLE-CUR
                        END-IF
                END-EVALUATE

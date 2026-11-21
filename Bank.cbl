@@ -64,6 +64,9 @@
            SELECT IFU-FILE ASSIGN TO WS-IFU-NOM
                ORGANIZATION IS LINE SEQUENTIAL
                FILE STATUS IS WS-STATUS.
+           SELECT OPTIONAL DECOUVERT-FILE ASSIGN TO "decouvert.dat"
+               ORGANIZATION IS LINE SEQUENTIAL
+               FILE STATUS IS WS-STATUS.
 
        DATA DIVISION.
        FILE SECTION.
@@ -88,7 +91,7 @@
        01 COMPTE-RECORD.
            05 COMPTE-NUM         PIC 9(10).
            05 COMPTE-TYPE        PIC A(10).
-           05 COMPTE-SOLDE       PIC 9(9)V99.
+           05 COMPTE-SOLDE       PIC S9(9)V99.
            05 COMPTE-CLIENT-ID   PIC 9(5).
 
        FD TRANSACTION-FILE.
@@ -130,7 +133,7 @@
 
        SD TRI-FILE.
        01 TRI-RECORD.
-           05 TRI-TOTAL            PIC 9(9)V99.
+           05 TRI-TOTAL            PIC S9(9)V99.
            05 TRI-CLIENT-ID        PIC 9(5).
            05 TRI-NAME             PIC A(30).
            05 TRI-NB-COMPTES       PIC 9(3).
@@ -179,6 +182,11 @@
 
        FD IFU-FILE.
        01 IFU-LINE                 PIC X(100).
+
+       FD DECOUVERT-FILE.
+       01 DECOUVERT-RECORD.
+           05 DEC-COMPTE           PIC 9(10).
+           05 DEC-PLAFOND          PIC 9(7)V99.
          
 
        WORKING-STORAGE SECTION.
@@ -243,6 +251,7 @@
            05 WS-SC-NB-ALERTES     PIC 9(3).
            05 WS-SC-EPARGNE        PIC 9(9)V99.
            05 WS-SC-MONTANT        PIC 9(9)V99.
+           05 WS-SC-NB-DEBITEURS   PIC 9(3).
            05 WS-SC-ENDETTEMENT    PIC 9(3)V99.
            05 WS-SC-SCORE          PIC 9(3).
            05 WS-SC-DECISION       PIC X.
@@ -311,14 +320,15 @@
            05 WS-NB-EPARGNE        PIC 9(5).
            05 WS-NB-ENTREPRISE     PIC 9(5).
            05 WS-NB-CLOTURE        PIC 9(5).
-           05 WS-TOTAL-DEPOTS      PIC 9(9)V99.
-           05 WS-MAX-SOLDE         PIC 9(9)V99.
+           05 WS-TOTAL-DEPOTS      PIC S9(9)V99.
+           05 WS-MAX-SOLDE         PIC S9(9)V99.
            05 WS-MAX-COMPTE        PIC 9(10).
            05 WS-NB-CREDITS        PIC 9(5).
            05 WS-TOTAL-RESTANT     PIC 9(9)V99.
            05 WS-NB-TRANS-MOIS     PIC 9(5).
            05 WS-NB-ALERTES        PIC 9(5).
        77 WS-MONTANT-AFF          PIC Z(8)9.99.
+       77 WS-SOLDE-AFF            PIC -(9)9.99.
        77 WS-NB-EXPORT            PIC 9(5).
 
        01 WS-PLAFOND.
@@ -359,11 +369,11 @@
        01 WS-CLASSEMENT.
            05 WS-FIN-CLIENTS       PIC X.
            05 WS-FIN-TRI           PIC X.
-           05 WS-CL-TOTAL          PIC 9(9)V99.
+           05 WS-CL-TOTAL          PIC S9(9)V99.
            05 WS-CL-NB-COMPTES     PIC 9(3).
            05 WS-CL-RANG           PIC 9(5).
            05 WS-CL-RANG-AFF       PIC Z(4)9.
-           05 WS-CL-TOTAL-GENERAL  PIC 9(9)V99.
+           05 WS-CL-TOTAL-GENERAL  PIC S9(9)V99.
 
        01 WS-JOURNAL.
            05 WS-JOURNAL-ACTION    PIC X(15).
@@ -378,8 +388,8 @@
            05 WS-SEUIL-MONTANT     PIC 9(9)V99 VALUE 5000.00.
            05 WS-SEUIL-RAFALE      PIC 9(3) VALUE 3.
            05 WS-SEUIL-VIDAGE      PIC 9(9)V99 VALUE 1000.00.
-           05 WS-SOLDE-AVANT       PIC 9(9)V99.
-           05 WS-SOLDE-APRES       PIC 9(9)V99.
+           05 WS-SOLDE-AVANT       PIC S9(9)V99.
+           05 WS-SOLDE-APRES       PIC S9(10)V99.
            05 WS-NB-OPS-JOUR       PIC 9(5).
            05 WS-FRAUDE-STATUS     PIC XX.
            05 WS-FRAUDE-IDX        PIC 9.
@@ -421,9 +431,9 @@
                INDEXED BY WS-CI-IDX-C.
                10 WS-TC-NUM        PIC 9(10).
                10 WS-TC-CLIENT-ID  PIC 9(5).
-               10 WS-TC-SOLDE-FIC  PIC 9(9)V99.
+               10 WS-TC-SOLDE-FIC  PIC S9(9)V99.
                10 WS-TC-SOLDE-REC  PIC S9(9)V99.
-               10 WS-TC-REPORT     PIC 9(9)V99.
+               10 WS-TC-REPORT     PIC S9(10)V99.
                10 WS-TC-INTERET    PIC 9(9)V99.
            05 WS-TAB-TRANS OCCURS 3000 TIMES
                INDEXED BY WS-CI-IDX-T.
@@ -501,9 +511,19 @@
            05 WS-LOT-MNT-AFF       PIC Z(10)9.99.
            05 WS-LOT-CODE-REJET    PIC X(3).
            05 WS-LOT-LIB-REJET     PIC X(40).
-           05 WS-LOT-SOLDE-SRC     PIC 9(9)V99.
+           05 WS-LOT-SOLDE-SRC     PIC S9(9)V99.
            05 WS-LOT-TYPE-SRC      PIC A(10).
            05 WS-LOT-TYPE-DEST     PIC A(10).
+
+       01 WS-DECOUVERT.
+           05 WS-DEC-COMPTE        PIC 9(10).
+           05 WS-DEC-PLAFOND       PIC 9(7)V99.
+           05 WS-DEC-NEW-PLAFOND   PIC 9(7)V99.
+           05 WS-DEC-STATUS        PIC XX.
+           05 WS-DEC-FOUND         PIC X.
+           05 WS-DEC-SOLDE-PROJ    PIC S9(10)V99.
+           05 WS-DEC-LIMITE        PIC S9(10)V99.
+           05 WS-DEC-AFF           PIC Z(6)9.99.
 
        01 WS-ARCHIVAGE.
            05 WS-ARCHIVE-NOM       PIC X(30).
@@ -643,6 +663,7 @@
            DISPLAY "2. Lister comptes client".
            DISPLAY "3. Cloturer compte".
            DISPLAY "4. Verifier un IBAN".
+           DISPLAY "5. Definir decouvert autorise".
            DISPLAY "9. Retour".
            DISPLAY "Choisissez une option : " WITH NO ADVANCING.
            ACCEPT SOUS-CHOIX.
@@ -656,6 +677,8 @@
                    PERFORM CLOTURER-COMPTE
                WHEN 4
                    PERFORM VERIFIER-IBAN
+               WHEN 5
+                   PERFORM DEFINIR-DECOUVERT
                WHEN 9
                    CONTINUE
                WHEN OTHER
@@ -877,6 +900,12 @@
 
        TRAITEMENT-LOT.
            COPY "traitement-lot.cpy".
+
+       DEFINIR-DECOUVERT.
+           COPY "definir-decouvert.cpy".
+
+       LIRE-DECOUVERT.
+           COPY "lire-decouvert.cpy".
 
 
        

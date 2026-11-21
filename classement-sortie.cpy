@@ -10,18 +10,18 @@
                        ADD 1 TO WS-CL-RANG
                        ADD TRI-TOTAL TO WS-CL-TOTAL-GENERAL
                        MOVE WS-CL-RANG TO WS-CL-RANG-AFF
-                       MOVE TRI-TOTAL TO WS-MONTANT-AFF
+                       MOVE TRI-TOTAL TO WS-SOLDE-AFF
                        DISPLAY WS-CL-RANG-AFF
                            " | ID " TRI-CLIENT-ID
                            " | " TRI-NAME
                            " | " TRI-NB-COMPTES " cpt"
-                           " | " WS-MONTANT-AFF
+                           " | " WS-SOLDE-AFF
                END-RETURN
            END-PERFORM.
 
            IF WS-CL-RANG = 0
                DISPLAY "Aucun client trouve."
            ELSE
-               MOVE WS-CL-TOTAL-GENERAL TO WS-MONTANT-AFF
-               DISPLAY "Total general : " WS-MONTANT-AFF
+               MOVE WS-CL-TOTAL-GENERAL TO WS-SOLDE-AFF
+               DISPLAY "Total general : " WS-SOLDE-AFF
            END-IF.
