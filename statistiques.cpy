@@ -71,6 +71,23 @@
            END-PERFORM.
            CLOSE TRANSACTION-FILE.
 
+      *    Alertes fraude nouvelles
+           MOVE "00" TO WS-STATUS.
+           OPEN INPUT ALERTE-FILE.
+           IF WS-STATUS = "00" OR WS-STATUS = "05"
+               PERFORM UNTIL WS-STATUS = "10"
+                   READ ALERTE-FILE
+                       AT END
+                           MOVE "10" TO WS-STATUS
+                       NOT AT END
+                           IF ALERTE-STATUT = "N"
+                               ADD 1 TO WS-NB-ALERTES
+                           END-IF
+                   END-READ
+               END-PERFORM
+               CLOSE ALERTE-FILE
+           END-IF.
+
            DISPLAY "Banque             : " BANQUE-NAME.
            MOVE BANQUE-SOLDE TO WS-MONTANT-AFF.
            DISPLAY "Solde banque       : " WS-MONTANT-AFF.
@@ -88,3 +105,4 @@
            MOVE WS-TOTAL-RESTANT TO WS-MONTANT-AFF.
            DISPLAY "Reste a rembourser : " WS-MONTANT-AFF.
            DISPLAY "Transactions mois  : " WS-NB-TRANS-MOIS.
+           DISPLAY "Alertes nouvelles  : " WS-NB-ALERTES.

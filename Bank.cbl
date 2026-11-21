@@ -37,6 +37,9 @@
            SELECT OPTIONAL JOURNAL-FILE ASSIGN TO "journal.log"
                ORGANIZATION IS LINE SEQUENTIAL
                FILE STATUS IS WS-STATUS.
+           SELECT OPTIONAL ALERTE-FILE ASSIGN TO "alerte.dat"
+               ORGANIZATION IS LINE SEQUENTIAL
+               FILE STATUS IS WS-STATUS.
 
        DATA DIVISION.
        FILE SECTION.
@@ -110,6 +113,15 @@
 
        FD JOURNAL-FILE.
        01 JOURNAL-LINE             PIC X(100).
+
+       FD ALERTE-FILE.
+       01 ALERTE-RECORD.
+           05 ALERTE-ID            PIC 9(5).
+           05 ALERTE-DATE          PIC 9(8).
+           05 ALERTE-COMPTE        PIC 9(10).
+           05 ALERTE-REGLE         PIC X(15).
+           05 ALERTE-MONTANT       PIC 9(9)V99.
+           05 ALERTE-STATUT        PIC X.
          
 
        WORKING-STORAGE SECTION.
@@ -216,6 +228,7 @@
            05 WS-NB-CREDITS        PIC 9(5).
            05 WS-TOTAL-RESTANT     PIC 9(9)V99.
            05 WS-NB-TRANS-MOIS     PIC 9(5).
+           05 WS-NB-ALERTES        PIC 9(5).
        77 WS-MONTANT-AFF          PIC Z(8)9.99.
        77 WS-NB-EXPORT            PIC 9(5).
 
@@ -270,6 +283,21 @@
            05 WS-JOURNAL-DATE      PIC 9(8).
            05 WS-JOURNAL-DATE-FMT  PIC X(10).
            05 WS-JOURNAL-NB        PIC 9(5).
+
+       01 WS-FRAUDE.
+           05 WS-SEUIL-MONTANT     PIC 9(9)V99 VALUE 5000.00.
+           05 WS-SEUIL-RAFALE      PIC 9(3) VALUE 3.
+           05 WS-SEUIL-VIDAGE      PIC 9(9)V99 VALUE 1000.00.
+           05 WS-SOLDE-AVANT       PIC 9(9)V99.
+           05 WS-SOLDE-APRES       PIC 9(9)V99.
+           05 WS-NB-OPS-JOUR       PIC 9(5).
+           05 WS-FRAUDE-STATUS     PIC XX.
+           05 WS-FRAUDE-IDX        PIC 9.
+           05 WS-MAX-ALERTE-ID     PIC 9(5).
+           05 WS-ALERTE-REGLE-CUR  PIC X(15).
+           05 WS-NB-ALERTES-NOUV   PIC 9(5).
+           05 WS-INPUT-ALERTE-ID   PIC 9(5).
+           05 WS-NB-TRAITEES       PIC 9(5).
 
        PROCEDURE DIVISION.
 
@@ -465,6 +493,7 @@
            DISPLAY "3. Statistiques".
            DISPLAY "4. Classement clients".
            DISPLAY "5. Consulter journal".
+           DISPLAY "6. Alertes fraude".
            DISPLAY "9. Retour".
            DISPLAY "Choisissez une option : " WITH NO ADVANCING.
            ACCEPT SOUS-CHOIX.
@@ -480,6 +509,8 @@
                    PERFORM CLASSEMENT-CLIENTS
                WHEN 5
                    PERFORM CONSULTER-JOURNAL
+               WHEN 6
+                   PERFORM ALERTES-FRAUDE
                WHEN 9
                    CONTINUE
                WHEN OTHER
@@ -569,6 +600,12 @@
 
        CONSULTER-JOURNAL.
            COPY "consulter-journal.cpy".
+
+       CONTROLE-FRAUDE.
+           COPY "controle-fraude.cpy".
+
+       ALERTES-FRAUDE.
+           COPY "alertes-fraude.cpy".
 
 
        

@@ -19,6 +19,7 @@ Le menu principal est decoupe en sous-menus.
 - Effectuer transaction (Depot, Retrait, Virement)
   - plafond de retrait de 1000.00 par jour et par compte
   - aucune operation possible sur un compte cloture
+  - detection de fraude automatique sur Retrait et Virement (gros montant, rafale, vidage)
 - Historique des transactions
 - Generer releve mensuel (avec IBAN en en-tete)
 - Export CSV des transactions (`transactions.csv`)
@@ -37,9 +38,10 @@ Le menu principal est decoupe en sous-menus.
   2. prelevement automatique des mensualites de credit
   3. virements permanents
   4. frais de tenue de compte (2.00 Courant, 5.00 Entreprise)
-- Statistiques (comptes par type, total des soldes, credits en cours...)
+- Statistiques (comptes par type, total des soldes, credits en cours, alertes...)
 - Classement des clients par avoirs (verbe SORT)
 - Consulter le journal d'audit (`journal.log`, filtre par date)
+- Alertes fraude (consulter et marquer comme traitees)
 
 ## Compiler
 Linux :
@@ -62,3 +64,4 @@ Le script met `COB_UNIX_LF=Y`, sinon les REWRITE cassent les fichiers .dat sous 
 - `credit.dat` : credits en cours (cree au premier credit)
 - `virement.dat` : virements permanents (cree au premier virement)
 - `journal.log` : journal d'audit de toutes les operations
+- `alerte.dat` : alertes de fraude (cree a la premiere alerte)

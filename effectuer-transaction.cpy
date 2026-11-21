@@ -98,6 +98,8 @@
                EXIT PARAGRAPH
            END-IF.
 
+           MOVE COMPTE-SOLDE TO WS-SOLDE-AVANT.
+
            IF COMPTE-TYPE = "Cloture"
                DISPLAY "Compte cloture : operation impossible."
                CLOSE COMPTE-FILE
@@ -220,5 +222,10 @@
                END-STRING
            END-IF.
            PERFORM ECRIRE-JOURNAL.
+
+           IF WS-TRANS-TYPE = "Retrait"
+              OR WS-TRANS-TYPE = "Virement"
+               PERFORM CONTROLE-FRAUDE
+           END-IF.
 
 
