@@ -5,6 +5,7 @@
                WITH NO ADVANCING.
            ACCEPT WS-MOIS.
 
+           MOVE SPACES TO WS-RELEVE-NOM.
            STRING "releve_" DELIMITED BY SIZE
                   WS-INPUT-COMPTE DELIMITED BY SIZE
                   "_" DELIMITED BY SIZE
