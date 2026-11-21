@@ -105,6 +105,11 @@
        01 WS-FOUND            PIC X VALUE "N".
        01 WS-COUNTER          PIC 9(10) VALUE 1.
 
+       01 WS-CREDIT.
+           05 WS-DUREE             PIC 9(3).
+           05 WS-TOTAL-CREDIT      PIC 9(9)V99.
+           05 WS-MENSUALITE        PIC 9(9)V99.
+
        01 WS-GENERATION-COMPTE.
            05 WS-MAX-COMPTE-NUM    PIC 9(10) VALUE ZEROS.
            05 WS-NOUVEAU-NUM       PIC 9(10).
@@ -168,7 +173,8 @@
            DISPLAY "4. Lister comptes client".
            DISPLAY "5. Historique des transactions".
            DISPLAY "6. Generer releve"
-           DISPLAY "7. Quitter".
+           DISPLAY "7. Accorder credit".
+           DISPLAY "8. Quitter".
            DISPLAY "Choisissez une option : " WITH NO ADVANCING.
            ACCEPT CHOIX.
 
@@ -186,6 +192,8 @@
                WHEN 6
                    PERFORM GENERER-RELEVE
                WHEN 7
+                   PERFORM ACCORDER-CREDIT
+               WHEN 8
                    MOVE "O" TO QUITTER
                
                WHEN OTHER
@@ -211,6 +219,7 @@
            COPY "generer-relever.cpy".
        
        ACCORDER-CREDIT.
+           COPY "accorder-credit.cpy".
 
        INTERET-EPARGNE.
 
