@@ -81,7 +81,8 @@
 
        WORKING-STORAGE SECTION.
        77 WS-STATUS           PIC XX VALUE "00".
-       77 CHOIX               PIC 99.
+       77 CHOIX               PIC 9.
+       77 SOUS-CHOIX          PIC 9.
        77 QUITTER             PIC X VALUE "N".
        77 WS-TODAY            PIC 9(8).
        77 WS-COMPTE-CHOIX     PIC 9(10).
@@ -185,41 +186,120 @@
 
        AFFICHER-MENU.
            DISPLAY "==== MENU BANCAIRE ====".
-           DISPLAY "1. Ajouter client".
-           DISPLAY "2. Creer compte".
-           DISPLAY "3. Effectuer transaction".
-           DISPLAY "4. Lister comptes client".
-           DISPLAY "5. Historique des transactions".
-           DISPLAY "6. Generer releve"
-           DISPLAY "7. Accorder credit".
-           DISPLAY "8. Interets epargne".
-           DISPLAY "9. Rembourser credit".
-           DISPLAY "10. Quitter".
+           DISPLAY "1. Clients".
+           DISPLAY "2. Comptes".
+           DISPLAY "3. Operations".
+           DISPLAY "4. Credits".
+           DISPLAY "5. Banque".
+           DISPLAY "6. Quitter".
            DISPLAY "Choisissez une option : " WITH NO ADVANCING.
            ACCEPT CHOIX.
 
            EVALUATE CHOIX
                WHEN 1
-                   PERFORM AJOUTER-CLIENT
+                   PERFORM MENU-CLIENTS
                WHEN 2
-                   PERFORM CREER-COMPTE
+                   PERFORM MENU-COMPTES
                WHEN 3
-                   PERFORM EFFECTUER-TRANSACTION
+                   PERFORM MENU-OPERATIONS
                WHEN 4
-                   PERFORM LISTER-COMPTES-CLIENT
+                   PERFORM MENU-CREDITS
                WHEN 5
-                   PERFORM HISTORIQUE-TRANSACTIONS
+                   PERFORM MENU-BANQUE
                WHEN 6
+                   MOVE "O" TO QUITTER
+               WHEN OTHER
+                   DISPLAY "Option invalide."
+           END-EVALUATE.
+
+       MENU-CLIENTS.
+           DISPLAY "---- CLIENTS ----".
+           DISPLAY "1. Ajouter client".
+           DISPLAY "9. Retour".
+           DISPLAY "Choisissez une option : " WITH NO ADVANCING.
+           ACCEPT SOUS-CHOIX.
+
+           EVALUATE SOUS-CHOIX
+               WHEN 1
+                   PERFORM AJOUTER-CLIENT
+               WHEN 9
+                   CONTINUE
+               WHEN OTHER
+                   DISPLAY "Option invalide."
+           END-EVALUATE.
+
+       MENU-COMPTES.
+           DISPLAY "---- COMPTES ----".
+           DISPLAY "1. Creer compte".
+           DISPLAY "2. Lister comptes client".
+           DISPLAY "9. Retour".
+           DISPLAY "Choisissez une option : " WITH NO ADVANCING.
+           ACCEPT SOUS-CHOIX.
+
+           EVALUATE SOUS-CHOIX
+               WHEN 1
+                   PERFORM CREER-COMPTE
+               WHEN 2
+                   PERFORM LISTER-COMPTES-CLIENT
+               WHEN 9
+                   CONTINUE
+               WHEN OTHER
+                   DISPLAY "Option invalide."
+           END-EVALUATE.
+
+       MENU-OPERATIONS.
+           DISPLAY "---- OPERATIONS ----".
+           DISPLAY "1. Effectuer transaction".
+           DISPLAY "2. Historique des transactions".
+           DISPLAY "3. Generer releve".
+           DISPLAY "9. Retour".
+           DISPLAY "Choisissez une option : " WITH NO ADVANCING.
+           ACCEPT SOUS-CHOIX.
+
+           EVALUATE SOUS-CHOIX
+               WHEN 1
+                   PERFORM EFFECTUER-TRANSACTION
+               WHEN 2
+                   PERFORM HISTORIQUE-TRANSACTIONS
+               WHEN 3
                    PERFORM GENERER-RELEVE
-               WHEN 7
+               WHEN 9
+                   CONTINUE
+               WHEN OTHER
+                   DISPLAY "Option invalide."
+           END-EVALUATE.
+
+       MENU-CREDITS.
+           DISPLAY "---- CREDITS ----".
+           DISPLAY "1. Accorder credit".
+           DISPLAY "2. Rembourser credit".
+           DISPLAY "9. Retour".
+           DISPLAY "Choisissez une option : " WITH NO ADVANCING.
+           ACCEPT SOUS-CHOIX.
+
+           EVALUATE SOUS-CHOIX
+               WHEN 1
                    PERFORM ACCORDER-CREDIT
-               WHEN 8
+               WHEN 2
+                   PERFORM REMBOURSER-CREDIT
+               WHEN 9
+                   CONTINUE
+               WHEN OTHER
+                   DISPLAY "Option invalide."
+           END-EVALUATE.
+
+       MENU-BANQUE.
+           DISPLAY "---- BANQUE ----".
+           DISPLAY "1. Interets epargne".
+           DISPLAY "9. Retour".
+           DISPLAY "Choisissez une option : " WITH NO ADVANCING.
+           ACCEPT SOUS-CHOIX.
+
+           EVALUATE SOUS-CHOIX
+               WHEN 1
                    PERFORM INTERET-EPARGNE
                WHEN 9
-                   PERFORM REMBOURSER-CREDIT
-               WHEN 10
-                   MOVE "O" TO QUITTER
-               
+                   CONTINUE
                WHEN OTHER
                    DISPLAY "Option invalide."
            END-EVALUATE.
