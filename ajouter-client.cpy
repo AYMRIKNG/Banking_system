@@ -37,3 +37,15 @@
            CLOSE CLIENT-FILE.
 
            DISPLAY "Client ajoute avec succes.".
+
+      *    Mettre a jour le nombre de clients de la banque
+           OPEN I-O BANQUE-FILE.
+           READ BANQUE-FILE
+               AT END
+                   DISPLAY "Erreur : enregistrement banque manquant."
+                   CLOSE BANQUE-FILE
+                   EXIT PARAGRAPH
+           END-READ.
+           ADD 1 TO BANQUE-NB-CLIENTS.
+           REWRITE BANQUE-RECORD.
+           CLOSE BANQUE-FILE.
