@@ -166,6 +166,16 @@
            05 WS-CC-TOTAL          PIC 9(9)V99.
            05 WS-CC-RETOUR         PIC 9.
 
+       01 WS-CALCUL-IBAN.
+           05 WS-IBAN-MODE         PIC X.
+           05 WS-IBAN-COMPTE       PIC 9(10).
+           05 WS-IBAN-TEXTE        PIC X(27).
+           05 WS-IBAN-AFFICHE      PIC X(34).
+           05 WS-IBAN-RETOUR       PIC 9.
+
+       01 WS-VERIF-IBAN.
+           05 WS-IBAN-SAISIE       PIC X(40).
+
        01 WS-INTERETS.
            05 WS-INTERET           PIC 9(9)V99.
            05 WS-TOTAL-INTERETS    PIC 9(9)V99.
@@ -372,6 +382,7 @@
            DISPLAY "1. Creer compte".
            DISPLAY "2. Lister comptes client".
            DISPLAY "3. Cloturer compte".
+           DISPLAY "4. Verifier un IBAN".
            DISPLAY "9. Retour".
            DISPLAY "Choisissez une option : " WITH NO ADVANCING.
            ACCEPT SOUS-CHOIX.
@@ -383,6 +394,8 @@
                    PERFORM LISTER-COMPTES-CLIENT
                WHEN 3
                    PERFORM CLOTURER-COMPTE
+               WHEN 4
+                   PERFORM VERIFIER-IBAN
                WHEN 9
                    CONTINUE
                WHEN OTHER
@@ -487,6 +500,9 @@
 
        CLOTURER-COMPTE.
            COPY "cloturer-compte.cpy".
+
+       VERIFIER-IBAN.
+           COPY "verifier-iban.cpy".
 
         EFFECTUER-TRANSACTION.
            COPY "effectuer-transaction.cpy".

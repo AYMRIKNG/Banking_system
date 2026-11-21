@@ -12,9 +12,16 @@
                        MOVE "10" TO WS-STATUS
                    NOT AT END
                        IF COMPTE-CLIENT-ID = WS-INPUT-ID
+                           MOVE "G" TO WS-IBAN-MODE
+                           MOVE COMPTE-NUM TO WS-IBAN-COMPTE
+                           MOVE SPACES TO WS-IBAN-TEXTE
+                                          WS-IBAN-AFFICHE
+                           MOVE ZERO TO WS-IBAN-RETOUR
+                           CALL "CALCUL-IBAN" USING WS-CALCUL-IBAN
                            DISPLAY "Compte : " COMPTE-NUM
                            DISPLAY "Type : " COMPTE-TYPE
                            DISPLAY "Solde : " COMPTE-SOLDE
+                           DISPLAY "IBAN : " WS-IBAN-AFFICHE
                            DISPLAY "-----------------------------"
                            MOVE "Y" TO WS-FOUND
                        END-IF

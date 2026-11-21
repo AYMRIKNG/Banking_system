@@ -11,15 +11,16 @@ Le menu principal est decoupe en sous-menus.
 
 **2. Comptes**
 - Creer compte (Courant, Epargne, Entreprise)
-- Lister comptes client
+- Lister comptes client (avec IBAN francais)
 - Cloturer compte (solde rendu, refuse si un credit est en cours)
+- Verifier un IBAN (validation modulo 97 et verification du compte)
 
 **3. Operations**
 - Effectuer transaction (Depot, Retrait, Virement)
   - plafond de retrait de 1000.00 par jour et par compte
   - aucune operation possible sur un compte cloture
 - Historique des transactions
-- Generer releve mensuel
+- Generer releve mensuel (avec IBAN en en-tete)
 - Export CSV des transactions (`transactions.csv`)
 - Virements permanents : creation et arret (executes en fin de mois)
 - Annuler une transaction (Depot, Retrait, Virement : contre-passation)
@@ -43,7 +44,7 @@ Le menu principal est decoupe en sous-menus.
 ## Compiler
 Linux :
 ```
-cobc -x -o Bank Bank.cbl calcul-credit.cbl
+cobc -x -o Bank Bank.cbl calcul-credit.cbl iban.cbl
 ./Bank
 ```
 

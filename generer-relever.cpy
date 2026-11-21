@@ -24,6 +24,21 @@
            MOVE SPACES TO RELEVE-LINE.
            WRITE RELEVE-LINE.
 
+           MOVE "G" TO WS-IBAN-MODE.
+           MOVE WS-INPUT-COMPTE TO WS-IBAN-COMPTE.
+           MOVE SPACES TO WS-IBAN-TEXTE
+                          WS-IBAN-AFFICHE.
+           MOVE ZERO TO WS-IBAN-RETOUR.
+           CALL "CALCUL-IBAN" USING WS-CALCUL-IBAN.
+
+           MOVE SPACES TO RELEVE-LINE.
+           STRING "IBAN : " DELIMITED BY SIZE
+                  WS-IBAN-AFFICHE DELIMITED BY SIZE
+                  INTO RELEVE-LINE
+           END-STRING.
+           WRITE RELEVE-LINE.
+           MOVE SPACES TO RELEVE-LINE.
+
 
 
            OPEN INPUT TRANSACTION-FILE.
