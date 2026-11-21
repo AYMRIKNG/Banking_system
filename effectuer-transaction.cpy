@@ -89,6 +89,14 @@
                    DISPLAY "Compte destination cloture."
                    EXIT PARAGRAPH
                END-IF
+               IF COMPTE-TYPE = "LivretA"
+                   COMPUTE WS-LA-SOLDE-PROJ =
+                       COMPTE-SOLDE + WS-INPUT-MONTANT
+                   IF WS-LA-SOLDE-PROJ > WS-PLAFOND-LIVRETA
+                       DISPLAY "Plafond livret A depasse (22950.00)."
+                       EXIT PARAGRAPH
+                   END-IF
+               END-IF
            END-IF.
 
            MOVE "N" TO WS-FOUND.
@@ -121,6 +129,15 @@
            END-IF.
 
            IF WS-TRANS-TYPE = "Depot"
+               IF COMPTE-TYPE = "LivretA"
+                   COMPUTE WS-LA-SOLDE-PROJ =
+                       COMPTE-SOLDE + WS-INPUT-MONTANT
+                   IF WS-LA-SOLDE-PROJ > WS-PLAFOND-LIVRETA
+                       DISPLAY "Plafond livret A depasse (22950.00)."
+                       CLOSE COMPTE-FILE
+                       EXIT PARAGRAPH
+                   END-IF
+               END-IF
                ADD WS-INPUT-MONTANT TO COMPTE-SOLDE
                REWRITE COMPTE-RECORD
                DISPLAY "Depot effectue."
@@ -140,6 +157,7 @@
            ELSE
                IF WS-TRANS-TYPE = "Retrait"
                    IF COMPTE-TYPE = "Epargne"
+                      OR COMPTE-TYPE = "LivretA"
                        MOVE ZEROS TO WS-DEC-PLAFOND
                    ELSE
                        MOVE COMPTE-NUM TO WS-DEC-COMPTE
@@ -172,6 +190,7 @@
                ELSE
                    IF WS-TRANS-TYPE = "Virement"
                        IF COMPTE-TYPE = "Epargne"
+                          OR COMPTE-TYPE = "LivretA"
                            MOVE ZEROS TO WS-DEC-PLAFOND
                        ELSE
                            MOVE COMPTE-NUM TO WS-DEC-COMPTE

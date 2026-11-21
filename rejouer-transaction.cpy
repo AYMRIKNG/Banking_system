@@ -3,6 +3,7 @@
                WHEN "Ouverture"
                WHEN "Depot"
                WHEN "Interet"
+               WHEN "IntLivret"
                WHEN "Credit"
                    SET WS-CI-IDX-C TO 1
                    SEARCH WS-TAB-COMPTES

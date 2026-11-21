@@ -23,16 +23,18 @@ Le menu conseiller est decoupe en sous-menus (option `6. Deconnexion`).
 - Definir / debloquer PIN client
 
 **2. Comptes**
-- Creer compte (Courant, Epargne, Entreprise ; enregistre une transaction `Ouverture`)
+- Creer compte (Courant, Epargne, Entreprise, Livret A ; un seul `LivretA` par client, plafond des depots 22950.00 ; enregistre une transaction `Ouverture`)
 - Lister comptes client (avec IBAN francais, solde signe et decouvert autorise si > 0)
 - Cloturer compte (solde rendu, refuse si un credit est en cours ou si le solde est debiteur)
 - Verifier un IBAN (validation modulo 97 et verification du compte)
-- Definir decouvert autorise (plafond dans `decouvert.dat`, `0` pour supprimer ; interdit sur compte `Epargne` ou `Cloture`)
+- Definir decouvert autorise (plafond dans `decouvert.dat`, `0` pour supprimer ; interdit sur compte `Epargne`, `LivretA` ou `Cloture`)
 - Simuler agios du mois (option `2.6` : methode des nombres debiteurs, tableau detaille des jours debiteurs, aucune modification des fichiers)
+- Interets Livret A par quinzaines (option `2.7` : `1` simulation detaillee pour un compte et une annee sans modifier les fichiers, `2` versement idempotent des interets de l'annee pour tous les `LivretA`)
 
 **3. Operations**
 - Effectuer transaction (Depot, Retrait, Virement)
-  - soldes signes (`PIC S9(9)V99`) et regle de decouvert autorise (`solde - montant >= -plafond`) appliquee a tous les debits (retraits, virements, lots, virements permanents, mensualites, frais, annulations) ; les comptes `Epargne` ont toujours un plafond de `0`
+  - soldes signes (`PIC S9(9)V99`) et regle de decouvert autorise (`solde - montant >= -plafond`) appliquee a tous les debits (retraits, virements, lots, virements permanents, mensualites, frais, annulations) ; les comptes `Epargne` et `LivretA` ont toujours un plafond de `0`
+  - plafond des depots Livret A fixe a `22950.00` (refus sur depot, virement entrant, lot `R08`, virement permanent ; seuls les interets `IntLivret` peuvent faire depasser le plafond)
   - plafond de retrait de 1000.00 par jour et par compte
   - aucune operation possible sur un compte cloture
   - detection de fraude automatique sur Retrait et Virement (gros montant, rafale, vidage y compris passage en negatif)
@@ -153,6 +155,7 @@ Codes de rejet (`rejets.txt`) :
 - `R05` : depassement du decouvert autorise
 - `R06` : compte destination inconnu ou cloture
 - `R07` : compte destination egal au compte source
+- `R08` : plafond livret A depasse
 
 ## Scoring credit (option 4.1)
 Avant tout octroi de credit, le programme calcule la mensualite puis evalue le dossier client (`CALCULER-SCORE` + sous-programme `SCORING-CREDIT` dans `scoring.cbl`) avant toute modification des fichiers :
@@ -182,3 +185,25 @@ Les agios sur comptes debiteurs sont calcules par la **methode des nombres debit
 - **Commission d'intervention** : **8.00** par jour ou le solde de fin de journee est strictement inferieur a `-plafond` du decouvert autorise (`decouvert.dat`), plafonnee a **80.00** par mois.
 - **Simulation** (menu `Comptes -> 6. Simuler agios du mois`) : affiche le tableau detaille des jours debiteurs et le resume sans modifier aucun fichier.
 - **Prelevement en fin de mois** (etape 2 de `Traitement fin de mois`, juste apres les interets) : pour chaque compte `Courant` ou `Entreprise` sans transaction `Agios`/`Commission` sur le mois en cours, preleve de facon forcee `agios + commission` si > 0, enregistre les transactions `Agios` et `Commission`, credite `banque.dat` et trace l'operation dans `journal.log` (`AGIOS`).
+
+
+## Livret A et calcul des interets par quinzaines (option 2.7)
+Le type de compte `LivretA` (option `4 - Livret A` lors de la creation de compte) applique les regles suivantes :
+- **Un seul Livret A par client** : toute creation d'un second `LivretA` actif pour le meme client est refusee.
+- **Plafond des depots** : **22950.00** (`WS-PLAFOND-LIVRETA`). Tout credit qui ferait depasser ce solde est refuse (creation, depot, virement entrant, lot avec code rejet `R08`, virement permanent comptabilise en echec). Seuls les interets `IntLivret` peuvent faire depasser ce plafond.
+- **Regles communes avec Epargne** : jamais de decouvert autorise (`Definir decouvert` refuse), pas de frais de tenue de compte, pas d'agios, et exclu du calcul mensuel `Interets epargne` (option `5.1`).
+- **Regle des quinzaines** (`CALCULER-QUINZAINES` dans `calcul-quinzaines.cpy`) :
+  - Chaque annee compte **24 quinzaines** : du 1er au 15 (`AAAA-MM-1`) et du 16 a la fin du mois (`AAAA-MM-2`).
+  - **Credits** (`Ouverture`, `Depot`, `Virement` recu, `Report`, `IntLivret`) : commencent a rapporter au debut de la **quinzaine suivante** (le 16 du mois ou le 1er du mois suivant).
+  - **Debits** (`Retrait`, `Virement` emis, `Cloture`) : cessent de rapporter des le debut de la **quinzaine en cours** (le 1er ou le 16).
+  - **Formule** : `interet = somme(soldes de valeur positifs des quinzaines) * taux / 2400`, avec `WS-TAUX-LIVRETA = 2.40 %` et arrondi final au centime. Pour l'annee en cours, le calcul s'arrete a la quinzaine d'aujourd'hui avec un avertissement.
+- **Exemple chiffre (annee complete, taux 2,40 %)** :
+  - Ouverture le `10/01` de `1000.00` (rapporte a partir du `16/01`, quinzaine `01-2`), depot de `500.00` le `03/03` (rapporte a partir du `16/03`, quinzaine `03-2`), retrait de `200.00` le `20/06` (cesse de rapporter des le `16/06`, quinzaine `06-2`) :
+    - `01-1` (1 quinzaine) : `0.00`
+    - `01-2` a `03-1` (4 quinzaines) : `1000.00` -> `4 * 1000.00 = 4000.00`
+    - `03-2` a `06-1` (6 quinzaines) : `1500.00` -> `6 * 1500.00 = 9000.00`
+    - `06-2` a `12-2` (13 quinzaines) : `1300.00` -> `13 * 1300.00 = 16900.00`
+    - Total : `(4000 + 9000 + 16900) * 2.40 / 2400 = 29900 * 0.001 = 29.90`.
+- **Menu Comptes -> 7. Interets Livret A (quinzaines)** :
+  - `1` : simulation detaillee quinzaine par quinzaine pour un compte et une annee (aucune modification des fichiers).
+  - `2` : versement des interets de l'annee pour tous les `LivretA` actifs (transaction `IntLivret` datee `AAAA1231`, credit du compte, debit de `banque.dat`, idempotent par compte et par annee, resume et trace dans `journal.log` sous `INTERETS LIVRET`).

@@ -215,7 +215,7 @@
            MOVE COMPTE-SOLDE TO WS-SOLDE-AVANT.
 
       *    Regle du decouvert autorise (pas de decouvert en epargne)
-           IF COMPTE-TYPE = "Epargne"
+           IF COMPTE-TYPE = "Epargne" OR COMPTE-TYPE = "LivretA"
                MOVE ZEROS TO WS-DEC-PLAFOND
            ELSE
                MOVE COMPTE-NUM TO WS-DEC-COMPTE

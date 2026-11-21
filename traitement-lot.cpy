@@ -274,6 +274,7 @@
                        ELSE
                          MOVE "N" TO WS-FOUND
                          MOVE SPACES TO WS-LOT-TYPE-DEST
+                         MOVE ZEROS TO WS-LOT-SOLDE-DEST
                          MOVE "00" TO WS-STATUS
                          OPEN INPUT COMPTE-FILE
                          PERFORM UNTIL WS-STATUS = "10"
@@ -286,6 +287,8 @@
                                  MOVE "Y" TO WS-FOUND
                                  MOVE COMPTE-TYPE
                                    TO WS-LOT-TYPE-DEST
+                                 MOVE COMPTE-SOLDE
+                                   TO WS-LOT-SOLDE-DEST
                                END-IF
                            END-READ
                          END-PERFORM
@@ -305,6 +308,7 @@
                       AND (WS-LD-OP = "Retrait"
                            OR WS-LD-OP = "Virement")
                      IF WS-LOT-TYPE-SRC = "Epargne"
+                        OR WS-LOT-TYPE-SRC = "LivretA"
                        MOVE ZEROS TO WS-DEC-PLAFOND
                      ELSE
                        MOVE WS-LD-COMPTE TO WS-DEC-COMPTE
@@ -316,6 +320,30 @@
                      IF WS-DEC-SOLDE-PROJ < WS-DEC-LIMITE
                        MOVE "R05" TO WS-LOT-CODE-REJET
                        MOVE "Depassement du decouvert autorise"
+                         TO WS-LOT-LIB-REJET
+                     END-IF
+                   END-IF
+
+      *            R08 : plafond livret A depasse
+                   IF WS-LOT-CODE-REJET = SPACES
+                      AND WS-LD-OP = "Depot"
+                      AND WS-LOT-TYPE-SRC = "LivretA"
+                     COMPUTE WS-LA-SOLDE-PROJ =
+                       WS-LOT-SOLDE-SRC + WS-LD-MONTANT
+                     IF WS-LA-SOLDE-PROJ > WS-PLAFOND-LIVRETA
+                       MOVE "R08" TO WS-LOT-CODE-REJET
+                       MOVE "Plafond livret A depasse"
+                         TO WS-LOT-LIB-REJET
+                     END-IF
+                   END-IF
+                   IF WS-LOT-CODE-REJET = SPACES
+                      AND WS-LD-OP = "Virement"
+                      AND WS-LOT-TYPE-DEST = "LivretA"
+                     COMPUTE WS-LA-SOLDE-PROJ =
+                       WS-LOT-SOLDE-DEST + WS-LD-MONTANT
+                     IF WS-LA-SOLDE-PROJ > WS-PLAFOND-LIVRETA
+                       MOVE "R08" TO WS-LOT-CODE-REJET
+                       MOVE "Plafond livret A depasse"
                          TO WS-LOT-LIB-REJET
                      END-IF
                    END-IF

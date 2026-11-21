@@ -28,8 +28,8 @@
                EXIT PARAGRAPH
            END-IF.
 
-           IF COMPTE-TYPE = "Epargne"
-               DISPLAY "Carte interdite sur un compte Epargne."
+           IF COMPTE-TYPE = "Epargne" OR COMPTE-TYPE = "LivretA"
+               DISPLAY "Carte interdite sur un compte epargne."
                EXIT PARAGRAPH
            END-IF.
 

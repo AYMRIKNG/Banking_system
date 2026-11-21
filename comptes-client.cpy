@@ -29,6 +29,7 @@
                            DISPLAY "Solde : "
                                FUNCTION TRIM(WS-SOLDE-AFF)
                            IF COMPTE-TYPE NOT = "Epargne"
+                              AND COMPTE-TYPE NOT = "LivretA"
                               AND COMPTE-TYPE NOT = "Cloture"
                                MOVE COMPTE-NUM TO WS-DEC-COMPTE
                                PERFORM LIRE-DECOUVERT

@@ -27,8 +27,8 @@
                EXIT PARAGRAPH
            END-IF.
 
-           IF COMPTE-TYPE = "Epargne"
-               DISPLAY "Pas de decouvert sur un compte epargne."
+           IF COMPTE-TYPE = "Epargne" OR COMPTE-TYPE = "LivretA"
+               DISPLAY "Pas de decouvert sur ce type de compte."
                EXIT PARAGRAPH
            END-IF.
 

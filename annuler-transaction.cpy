@@ -115,6 +115,7 @@
 
                IF WS-ANN-TYPE = "Depot"
                    IF COMPTE-TYPE = "Epargne"
+                      OR COMPTE-TYPE = "LivretA"
                        MOVE ZEROS TO WS-DEC-PLAFOND
                    ELSE
                        MOVE COMPTE-NUM TO WS-DEC-COMPTE
@@ -164,6 +165,7 @@
                    EXIT PARAGRAPH
                END-IF
                IF COMPTE-TYPE = "Epargne"
+                  OR COMPTE-TYPE = "LivretA"
                    MOVE ZEROS TO WS-DEC-PLAFOND
                ELSE
                    MOVE COMPTE-NUM TO WS-DEC-COMPTE

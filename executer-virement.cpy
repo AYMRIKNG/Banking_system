@@ -31,6 +31,16 @@
                ADD 1 TO WS-NB-VIREMENTS-ECHEC
                EXIT PARAGRAPH
            END-IF.
+           IF COMPTE-TYPE = "LivretA"
+               COMPUTE WS-LA-SOLDE-PROJ = COMPTE-SOLDE + VP-MONTANT
+               IF WS-LA-SOLDE-PROJ > WS-PLAFOND-LIVRETA
+                   DISPLAY "Virement " VP-ID
+                       " : plafond livret A depasse sur " VP-DEST
+                   CLOSE COMPTE-FILE
+                   ADD 1 TO WS-NB-VIREMENTS-ECHEC
+                   EXIT PARAGRAPH
+               END-IF
+           END-IF.
            CLOSE COMPTE-FILE.
 
       *    Verifier et debiter le compte source
@@ -64,7 +74,7 @@
                EXIT PARAGRAPH
            END-IF.
 
-           IF COMPTE-TYPE = "Epargne"
+           IF COMPTE-TYPE = "Epargne" OR COMPTE-TYPE = "LivretA"
                MOVE ZEROS TO WS-DEC-PLAFOND
            ELSE
                MOVE COMPTE-NUM TO WS-DEC-COMPTE

@@ -69,6 +69,7 @@
                                     MOVE TRANSACTION-DATE(1:6)
                                         TO WS-TRANSACTION-MOIS
                                WHEN TRANSACTION-TYPE = "Interet"
+                               WHEN TRANSACTION-TYPE = "IntLivret"
                                     MOVE TRANSACTION-DATE(1:6)
                                         TO WS-TRANSACTION-MOIS
                                WHEN TRANSACTION-TYPE = "Rembourse"

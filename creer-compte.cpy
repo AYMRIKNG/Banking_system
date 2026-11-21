@@ -23,6 +23,7 @@
            DISPLAY "1 - Courant".
            DISPLAY "2 - Epargne".
            DISPLAY "3 - Entreprise".
+           DISPLAY "4 - Livret A".
            DISPLAY "Votre choix : " WITH NO ADVANCING.
            ACCEPT WS-COMPTE-CHOIX.
     
@@ -33,6 +34,8 @@
                    MOVE "Epargne" TO NEW-COMPTE-TYPE
                WHEN 3
                    MOVE "Entreprise" TO NEW-COMPTE-TYPE
+               WHEN 4
+                   MOVE "LivretA" TO NEW-COMPTE-TYPE
                WHEN OTHER
                    DISPLAY "Choix invalide. Type par defaut : Courant"
                    MOVE "Courant" TO NEW-COMPTE-TYPE
@@ -45,6 +48,12 @@
            
            IF NEW-COMPTE-SOLDE < BANQUE-FRAIS-COMPTE
                DISPLAY "Solde initial insuffisant"
+               EXIT PARAGRAPH
+           END-IF
+
+           IF NEW-COMPTE-TYPE = "LivretA"
+              AND NEW-COMPTE-SOLDE > WS-PLAFOND-LIVRETA
+               DISPLAY "Plafond livret A depasse (22950.00)."
                EXIT PARAGRAPH
            END-IF
 
@@ -70,6 +79,29 @@
            IF WS-FOUND = "N"
                DISPLAY "Erreur : client non trouve."
                EXIT PARAGRAPH
+           END-IF.
+
+      *    Un seul Livret A par client
+           IF NEW-COMPTE-TYPE = "LivretA"
+               MOVE "N" TO WS-FOUND
+               MOVE "00" TO WS-STATUS
+               OPEN INPUT COMPTE-FILE
+               PERFORM UNTIL WS-STATUS = "10" OR WS-FOUND = "Y"
+                   READ COMPTE-FILE
+                       AT END
+                           MOVE "10" TO WS-STATUS
+                       NOT AT END
+                           IF COMPTE-CLIENT-ID = NEW-COMPTE-CLIENT-ID
+                              AND COMPTE-TYPE = "LivretA"
+                               MOVE "Y" TO WS-FOUND
+                           END-IF
+                   END-READ
+               END-PERFORM
+               CLOSE COMPTE-FILE
+               IF WS-FOUND = "Y"
+                   DISPLAY "Refus : ce client a deja un Livret A."
+                   EXIT PARAGRAPH
+               END-IF
            END-IF.
 
            OPEN EXTEND COMPTE-FILE.

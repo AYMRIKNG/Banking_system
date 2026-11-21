@@ -561,6 +561,7 @@
            05 WS-LOT-CODE-REJET    PIC X(3).
            05 WS-LOT-LIB-REJET     PIC X(40).
            05 WS-LOT-SOLDE-SRC     PIC S9(9)V99.
+           05 WS-LOT-SOLDE-DEST    PIC S9(9)V99.
            05 WS-LOT-TYPE-SRC      PIC A(10).
            05 WS-LOT-TYPE-DEST     PIC A(10).
 
@@ -749,6 +750,47 @@
            05 WS-CB-J              PIC 9(2).
            05 WS-CB-MATCH          PIC X.
            05 WS-CB-STATUT-LIB     PIC X(10).
+       01 WS-LIVRETA.
+           05 WS-PLAFOND-LIVRETA   PIC 9(9)V99 VALUE 22950.00.
+           05 WS-TAUX-LIVRETA      PIC 9V99 VALUE 2.40.
+           05 WS-LA-CHOIX          PIC 9.
+           05 WS-LA-COMPTE         PIC 9(10).
+           05 WS-LA-ANNEE          PIC 9(4).
+           05 WS-LA-ANNEE-COUR     PIC 9(4).
+           05 WS-LA-DETAIL         PIC X.
+           05 WS-LA-FOUND          PIC X.
+           05 WS-LA-ERREUR         PIC X.
+           05 WS-LA-IDX-C          PIC 9(4).
+           05 WS-LA-DATE-DEB       PIC 9(8).
+           05 WS-LA-DATE-VERS      PIC 9(8).
+           05 WS-LA-SOLDE-DEB      PIC S9(9)V99.
+           05 WS-LA-SOLDE-PROJ     PIC S9(10)V99.
+           05 WS-LA-SOLDE-Q        PIC S9(10)V99.
+           05 WS-LA-SOMME-SOLDES   PIC 9(11)V99.
+           05 WS-LA-INT-Q          PIC 9(9)V99.
+           05 WS-LA-INTERETS       PIC 9(9)V99.
+           05 WS-LA-Q-MAX          PIC 9(2).
+           05 WS-LA-Q              PIC 9(2).
+           05 WS-LA-Q-TR           PIC 9(2).
+           05 WS-LA-Q-EFF          PIC 9(2).
+           05 WS-LA-MM             PIC 9(2).
+           05 WS-LA-JJ             PIC 9(2).
+           05 WS-LA-NUM-Q          PIC 9.
+           05 WS-LA-TAB-DELTA.
+               10 WS-LA-DELTA      PIC S9(10)V99 OCCURS 24 TIMES.
+           05 WS-LA-NB-ELIG        PIC 9(4).
+           05 WS-LA-TAB-ELIG OCCURS 500 TIMES.
+               10 WS-LA-ELIG-NUM   PIC 9(10).
+           05 WS-LA-K              PIC 9(4).
+           05 WS-LA-DEJA           PIC X.
+           05 WS-LA-NB-VERS        PIC 9(5).
+           05 WS-LA-NB-DEJA        PIC 9(5).
+           05 WS-LA-TOT-INTERETS   PIC 9(9)V99.
+           05 WS-LA-Q-FMT          PIC X(9).
+           05 WS-LA-AFF-SOLDE      PIC -(11)9.99.
+           05 WS-LA-AFF-INT        PIC Z(13)9.99.
+           05 WS-LA-AFF-TAUX       PIC 9.99.
+           05 WS-LA-LIGNE          PIC X(80).
 
        PROCEDURE DIVISION.
 
@@ -873,6 +915,7 @@
            DISPLAY "4. Verifier un IBAN".
            DISPLAY "5. Definir decouvert autorise".
            DISPLAY "6. Simuler agios du mois".
+           DISPLAY "7. Interets Livret A (quinzaines)".
            DISPLAY "9. Retour".
            DISPLAY "Choisissez une option : " WITH NO ADVANCING.
            ACCEPT SOUS-CHOIX.
@@ -890,6 +933,8 @@
                    PERFORM DEFINIR-DECOUVERT
                WHEN 6
                    PERFORM SIMULER-AGIOS
+               WHEN 7
+                   PERFORM INTERETS-LIVRETA
                WHEN 9
                    CONTINUE
                WHEN OTHER
@@ -1245,6 +1290,11 @@
            END-STRING.
            PERFORM ECRIRE-JOURNAL.
            MOVE WS-CB-STATUS TO WS-STATUS.
+       CALCULER-QUINZAINES.
+           COPY "calcul-quinzaines.cpy".
+
+       INTERETS-LIVRETA.
+           COPY "interets-livreta.cpy".
 
 
        
