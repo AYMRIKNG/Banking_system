@@ -60,6 +60,9 @@
                                WHEN TRANSACTION-TYPE = "Frais"
                                     MOVE TRANSACTION-DATE(1:6)
                                         TO WS-TRANSACTION-MOIS
+                               WHEN TRANSACTION-TYPE = "Annulation"
+                                    MOVE TRANSACTION-DATE(1:6)
+                                        TO WS-TRANSACTION-MOIS
                            END-EVALUATE
 
                            IF WS-TRANSACTION-MOIS = WS-MOIS

@@ -211,6 +211,14 @@
        01 WS-GENERATION-TRANSACTION.
            05 WS-MAX-TRANS-NUM     PIC 9(10) VALUE ZEROS.
 
+       01 WS-ANNULATION.
+           05 WS-ANN-ID            PIC 9(10).
+           05 WS-ANN-COMPTE        PIC 9(10).
+           05 WS-ANN-DATE          PIC 9(8).
+           05 WS-ANN-TYPE          PIC A(10).
+           05 WS-ANN-MONTANT       PIC 9(9)V99.
+           05 WS-ANN-DEST          PIC 9(10).
+
        
 
        PROCEDURE DIVISION.
@@ -338,6 +346,7 @@
            DISPLAY "4. Export CSV".
            DISPLAY "5. Creer virement permanent".
            DISPLAY "6. Arreter virement permanent".
+           DISPLAY "7. Annuler transaction".
            DISPLAY "9. Retour".
            DISPLAY "Choisissez une option : " WITH NO ADVANCING.
            ACCEPT SOUS-CHOIX.
@@ -355,6 +364,8 @@
                    PERFORM CREER-VIREMENT
                WHEN 6
                    PERFORM ARRETER-VIREMENT
+               WHEN 7
+                   PERFORM ANNULER-TRANSACTION
                WHEN 9
                    CONTINUE
                WHEN OTHER
@@ -461,6 +472,9 @@
 
        FRAIS-TENUE-COMPTE.
            COPY "frais-tenue.cpy".
+
+       ANNULER-TRANSACTION.
+           COPY "annuler-transaction.cpy".
 
 
        
