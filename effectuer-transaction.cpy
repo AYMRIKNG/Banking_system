@@ -21,6 +21,32 @@
                END-IF
            END-IF.
 
+      *    Verifier le compte destination avant de debiter
+           IF WS-TRANS-TYPE = "Virement"
+               IF WS-INPUT-ID = WS-INPUT-COMPTE
+                   DISPLAY "Compte source et destination identiques."
+                   EXIT PARAGRAPH
+               END-IF
+               MOVE "N" TO WS-FOUND
+               MOVE "00" TO WS-STATUS
+               OPEN INPUT COMPTE-FILE
+               PERFORM UNTIL WS-STATUS = "10" OR WS-FOUND = "Y"
+                   READ COMPTE-FILE
+                       AT END
+                           MOVE "10" TO WS-STATUS
+                       NOT AT END
+                           IF COMPTE-NUM = WS-INPUT-ID
+                               MOVE "Y" TO WS-FOUND
+                           END-IF
+                   END-READ
+               END-PERFORM
+               CLOSE COMPTE-FILE
+               IF WS-FOUND = "N"
+                   DISPLAY "Compte destination non trouve."
+                   EXIT PARAGRAPH
+               END-IF
+           END-IF.
+
            MOVE "N" TO WS-FOUND.
            MOVE "00" TO WS-STATUS.
            OPEN I-O COMPTE-FILE.
@@ -94,6 +120,10 @@
                        REWRITE COMPTE-RECORD
                        DISPLAY "Compte source debite."
 
+      *                Repartir du debut : la destination peut etre
+      *                avant le compte source dans le fichier
+                       CLOSE COMPTE-FILE
+                       OPEN I-O COMPTE-FILE
                        MOVE "N" TO WS-FOUND
                        MOVE "00" TO WS-STATUS
                        PERFORM UNTIL WS-STATUS = "10" OR WS-FOUND = "Y"
